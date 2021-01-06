@@ -1,8 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-
-import '../model/person.dart';
+import 'package:starwars_live/model/person.dart';
 
 class StarWarsDb {
   final Future<Database> database = _createDatabase();

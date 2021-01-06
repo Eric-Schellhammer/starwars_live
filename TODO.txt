@@ -1,0 +1,10 @@
+https://www.qrcode-generator.de/
+
+4711
+4711-1
+4711-2
+4711-3
+irgendwas
+
+
+Synchronisieren auf LoginScreen und MenuScreen, als FAB

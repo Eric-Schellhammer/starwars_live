@@ -1,0 +1,103 @@
+
+MDB = Master Database
+    fortlaufend, Con-übergreifend
+    Cloud
+CDB = Con Database
+    Kopie der MDB, falls auf dem Con kein Internet verfügbar ist
+    für einen Con
+    auf transportablem PC, der auf dem Congelände aufgestellt werden kann
+ADB = App Database
+    Kopie der MDB oder CDB, falls auf dem Con nicht überall WLAN verfügbar ist
+    auf Handy, versorgt Scanner-App mit Daten
+
+
+Use Cases:
+
+   * Orga legt neuen Con an (?)
+
+   * Account anlegen
+        durch Orga? durch Spieler?
+
+   * Charakter anlegen
+
+   * Orga vergibt Scan-Level an Charakter
+
+   * ID für Charakter bereitstellen
+        - Spieler beantragt ID mit Fälschungsstufe
+        - Orga bewilligt
+        - QR-Code wird Spieler bereitgestellt
+            Ausdruck möglich
+            digitale Anzeige möglich
+
+   * Spieler sichtet bestehende IDs des Charakters
+
+   * Charakter A prüft ID eines Charakters B
+        - Charakter A hat sich in seine Scanner-App eingeloggt => Scan-Level
+        - Charakter A scannt QR-Code von Charakter B
+            Bild des (vorgeblichen) Charakters wird angezeigt
+            Informationen des Dokuments
+                Typ, Zusatzinformationen (falls vorhanden)
+            Status
+                ID-Level(B) >= Scan-Level(A)    =>
+                    Charakter unauffällig   =>
+                        grün: "ID gültig"
+                    Charakter auffällig (z.B. gesucht)  =>
+                        grün: "ID gültig" rot: "GESUCHT!"
+                ID-Level(B) < Scan-Level(A)     =>
+                    vorgeblicher Charakter unauffällig  =>
+                        rot: "ID ungültig"
+                    vorgeblicher Charakter auffällig    =>
+                        rot: "ID ungültig" rot: "GESUCHT!"
+
+
+Szenario 1: Con mit gutem mobilen Internet
+    Updates während des Cons können direkt in die MDB geschrieben werden
+    Scans können gegen die MDB durchgeführt werden
+    Erfordert:
+        Update-Screen auf MDB
+        Scan-API an MDB
+
+Szenario 2: Con ohne Internet aber mit guter WLAN-Abdeckung
+    Orga kopiert MDB vor dem Con auf CDB
+    Updates während den Cons werden in die CDB geschrieben
+    Scans werden gegen die CDB durchgeführt
+    Updates aus der CDB müssen nach dem Con in die MDB übertragen werden
+    Erfordert:
+        Kopieren von (Con-bezogener Auswahl?) von MDB nach CDB
+        Update-Screen auf CDB
+        Scan-API an CDB
+        Upload von Änderungen von CDB nach MDB
+
+Szenario 3: Con ohne gute WLAN-Abdeckung
+    Orga kopiert MDB vor dem Con auf CDB
+    Updates während den Cons werden in die CDB geschrieben
+    ADBs der Scanner müssen (am Anfang des Cons / jeden Morgen) aktualisiert werden
+    Scans werden gegen die ADB durchgeführt
+    Updates aus der CDB müssen nach dem Con in die MDB übertragen werden
+    Erfordert:
+        [Kopieren von (Con-bezogener Auswahl?) von MDB nach CDB]
+        [Update-Screen auf CDB]
+        Kopieren von CDB auf ADBs
+        Scannen gegen die ADB
+        [Upload von Änderungen von CDB nach MDB]
+
+
+Scanner müssen auf jeweiligen Modus eingestellt werden,
+damit auch klar ist, mit welchem Account man sich einloggen kann
+
+
+Dokumente:
+    Persönliche ID
+    Kapitänslizenz
+    Schiffsregistrierung
+    Waffenlizenz
+    Sektor-Handelslizenz
+
+
+Offene Punkte:
+    * Account für Spieler oder für Charakter?
+    * Verwaltung der Charakter-Details inkl Fälschungen
+        - Lebenslauf
+        - verknüpfte Personen
+        - gesucht-Status
+    * Dokumentenverwaltung inkl Fälschungen
