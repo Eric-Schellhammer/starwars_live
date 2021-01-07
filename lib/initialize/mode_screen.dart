@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/login_screen.dart';
+import 'package:starwars_live/initialize/starwars_widgets.dart';
 
 enum Modes { LIVE, COPY, LOCAL }
 
@@ -86,7 +87,7 @@ class _ModeScreenState extends State<ModeScreen> {
         errorMessage,
         style: TextStyle(color: Colors.red),
       ));
-    children.add(RaisedButton(
+    children.add(StarWarsButton(
       child: Text("OK"),
       onPressed: () {
         if (currentMode == Modes.LOCAL) {

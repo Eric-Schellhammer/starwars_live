@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/menu_screen.dart';
+import 'package:starwars_live/initialize/starwars_widgets.dart';
+import 'package:starwars_live/main.dart';
 
 class LoginScreen extends StatefulWidget {
   static const routeName = "/login_screen";
@@ -36,6 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
               Flexible(
                   flex: 2,
                   child: TextField(
+                    cursorColor: MAIN_COLOR,
+                    autofocus: true,
                     onChanged: (value) {
                       setState(() {
                         errorMessage = "";
@@ -54,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Text("-- noch nicht implementiert --"),
             Padding(
               padding: EdgeInsets.only(top: 16),
-              child: RaisedButton(
+              child: StarWarsButton(
                   onPressed: userName.isEmpty ? null : () => _checkLogin(),
                   child: Text(
                     "Login",

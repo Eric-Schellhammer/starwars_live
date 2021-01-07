@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:starwars_live/data_access/data_service.dart';
+import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/scanner/scan_screen.dart';
 
 class ScannerResultScreen extends StatefulWidget {
@@ -19,24 +20,23 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
   Widget build(BuildContext context) {
     result = ModalRoute.of(context).settings.arguments;
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Imperiale Datenbank"),
-      ),
       body: Column(
         children: <Widget>[
           Expanded(
             flex: 5,
-            child: _displayScanResult(),
+            child: StarWarsMenuFrame(child: _displayScanResult()),
           ),
           Expanded(
             flex: 1,
-            child: Center(
-              child: RaisedButton(
-                child: Text("Starte Scan"),
-                onPressed: () {
-                  Navigator.of(context)
-                      .pushReplacementNamed(ScanScreen.routeName);
-                },
+            child: StarWarsMenuFrame(
+              child: Center(
+                child: StarWarsButton(
+                  child: Text("Starte Scan"),
+                  onPressed: () {
+                    Navigator.of(context)
+                        .pushReplacementNamed(ScanScreen.routeName);
+                  },
+                ),
               ),
             ),
           )
@@ -132,7 +132,15 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
     return Container(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [Text(text)],
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          )
+        ],
       ),
       color: color,
     );

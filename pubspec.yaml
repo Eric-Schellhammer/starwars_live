@@ -27,6 +27,7 @@ dependencies:
   path:
   get_it:
   qr_code_scanner: ^0.2.1
+  google_fonts:
 
 
 

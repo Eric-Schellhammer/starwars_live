@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:starwars_live/initialize/application_config.dart';
 import 'package:starwars_live/initialize/login_screen.dart';
 import 'package:starwars_live/initialize/menu_screen.dart';
@@ -18,11 +19,11 @@ class StarWarsLive extends StatelessWidget {
       title: 'Star Wars Live',
       theme: ThemeData(
         primarySwatch: Colors.grey,
+        canvasColor: Colors.black,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        buttonTheme: ButtonThemeData(
-          buttonColor: Colors.blueGrey,
-          textTheme: ButtonTextTheme.primary,
-        ),
+        textTheme:
+            GoogleFonts.titilliumWebTextTheme(Theme.of(context).textTheme)
+                .apply(bodyColor: MAIN_COLOR),
       ),
       home: ModeScreen(),
       routes: {
@@ -34,3 +35,6 @@ class StarWarsLive extends StatelessWidget {
     );
   }
 }
+
+const Color MAIN_COLOR = Colors.lightBlueAccent;
+const Color MAIN_COLOR_INACTIVE = Colors.blueGrey;
