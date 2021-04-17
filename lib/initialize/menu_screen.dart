@@ -16,6 +16,7 @@ class MenuScreen extends StatefulWidget {
   _MenuScreenState createState() => _MenuScreenState();
 }
 
+// TODO make scaling adapt to device
 const SCALE_MENU = 2.1;
 const SCALE_NAV = 1.8;
 
@@ -82,8 +83,8 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: StarWarsMenuButton(
                         padding: EdgeInsets.all(16),
                         child: Text("Server"),
-                        onPressed: () {
-                          GetIt.instance.get<DataService>().getDb().getById(PersonKey(1)).then((person) {
+                        onPressed: () { // TODO used logged in person key
+                          GetIt.instance.get<DataService>().getDb().getById(PersonKey(2)).then((person) {
                             Navigator.of(context).pushNamed(ServerScreen.routeName, arguments: person);
                           });
                         },

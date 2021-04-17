@@ -1,13 +1,12 @@
 import 'package:flutter/widgets.dart';
-import 'package:get_it/get_it.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/model/account.dart';
+import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';
 
 class StarWarsDb {
-  static final List<DbTable> _tables = [AccountTable(), PersonTable()];
+  static final List<DbTable> _tables = [AccountTable(), PersonTable(), DocumentTable()];
 
   static Map<DbTableKey, DbTable> _tablesByKey;
   final Future<Database> _database = _createDatabase();
@@ -16,7 +15,7 @@ class StarWarsDb {
     // TODO does this open a new connection on each call?
     WidgetsFlutterBinding.ensureInitialized();
     _ensureTablesMapIsFilled();
-    return getDatabasesPath().then((databasesPath) => openDatabase(join(databasesPath, 'starwars_live.db'), version: 8, onUpgrade: _createTables));
+    return getDatabasesPath().then((databasesPath) => openDatabase(join(databasesPath, 'starwars_live.db'), version: 9, onUpgrade: _createTables));
   }
 
   static void _ensureTablesMapIsFilled() {
