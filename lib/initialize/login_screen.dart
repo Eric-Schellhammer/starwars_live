@@ -17,6 +17,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   String userName = "";
+  String password = "";
   String errorMessage = "";
 
   @override
@@ -55,14 +56,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   "Passwort",
                   style: TextStyle(fontSize: 20),
                 )),
-            Text("-- noch nicht implementiert --"),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Flexible(flex: 1, child: Text("")),
+              Flexible(
+                  flex: 2,
+                  child: TextField(
+                    cursorColor: MAIN_COLOR,
+                    onChanged: (value) {
+                      setState(() {
+                        errorMessage = "";
+                        password = value;
+                      });
+                    },
+                  )),
+              Flexible(flex: 1, child: Text(""))
+            ]),
             Padding(
               padding: EdgeInsets.only(top: 16),
               child: StarWarsButton(
-                  onPressed: userName.isEmpty ? null : () => _checkLogin(),
-                  child: Text(
-                    "Login",
-                  )),
+                onPressed: userName.isEmpty ? null : () => _checkLogin(),
+                child: Text("Login"),
+              ),
             ),
             Text(
               errorMessage,
@@ -75,13 +89,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _checkLogin() {
-    GetIt.instance
-        .get<DataService>()
-        .validateAccount(userName, "")
-        .then((accepted) {
+    GetIt.instance.get<DataService>().validateAccount(userName, password).then((accepted) {
       if (accepted) {
-        Navigator.of(context)
-            .pushNamed(MenuScreen.routeName, arguments: userName);
+        Navigator.of(context).pushNamed(MenuScreen.routeName, arguments: userName);
       } else {
         setState(() {
           errorMessage = "Login fehlgeschlagen";

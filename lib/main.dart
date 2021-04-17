@@ -6,6 +6,7 @@ import 'package:starwars_live/initialize/menu_screen.dart';
 import 'package:starwars_live/initialize/mode_screen.dart';
 import 'package:starwars_live/scanner/scan_screen.dart';
 import 'package:starwars_live/scanner/scanner_result_screen.dart';
+import 'package:starwars_live/server/server_screen.dart';
 
 void main() {
   final Application application = Application(child: StarWarsLive());
@@ -21,9 +22,7 @@ class StarWarsLive extends StatelessWidget {
         primarySwatch: Colors.grey,
         canvasColor: Colors.black,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        textTheme:
-            GoogleFonts.titilliumWebTextTheme(Theme.of(context).textTheme)
-                .apply(bodyColor: MAIN_COLOR),
+        textTheme: GoogleFonts.titilliumWebTextTheme(Theme.of(context).textTheme).apply(bodyColor: MAIN_COLOR),
       ),
       home: ModeScreen(),
       routes: {
@@ -31,6 +30,7 @@ class StarWarsLive extends StatelessWidget {
         MenuScreen.routeName: (ctx) => MenuScreen(),
         ScanScreen.routeName: (ctx) => ScanScreen(),
         ScannerResultScreen.routeName: (ctx) => ScannerResultScreen(),
+        ServerScreen.routeName: (ctx) => ServerScreen(),
       },
     );
   }

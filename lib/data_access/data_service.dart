@@ -1,23 +1,26 @@
 import 'package:starwars_live/data_access/local_database.dart';
+import 'package:starwars_live/model/account.dart';
+import 'package:starwars_live/model/person.dart';
 
-enum DocumentType {
-  PERSONAL_ID,
-  CAPTAINS_LICENCE,
-  VEHICLE_REGISTRATION,
-  WEAPON_LICENCE,
-  SECTOR_TRADE_LICENCE
-}
+enum DocumentType { PERSONAL_ID, CAPTAINS_LICENCE, VEHICLE_REGISTRATION, WEAPON_LICENCE, SECTOR_TRADE_LICENCE }
 
 abstract class DataService {
   StarWarsDb starWarsDb;
 
   DataService() {
     starWarsDb = StarWarsDb();
+    _loadDefaultDb(starWarsDb);
   }
 
   StarWarsDb getDb() {
     return starWarsDb;
   }
+
+  void _loadDefaultDb(StarWarsDb db) {
+    db.insert(Account(key: AccountKey(1), loginName: "abc", password: "123", personKey: PersonKey(1)));
+    db.insert(Person(key: PersonKey(1), firstName: "Marty", lastName: "McFly"));
+  }
+
 
   bool isAvailable(String serverIpAddress);
 
@@ -71,8 +74,7 @@ class DataServiceImpl extends DataService {
 
   @override
   Future<bool> validateAccount(String userName, String password) {
-    // TODO: implement validateAccount
-    return Future.value(userName.length > 1);
+    return getDb().getAll(AccountKey.dbTableKey).then((accounts) => accounts.where((element) => element.loginName == userName).any((element) => element.password == password));
   }
 }
 

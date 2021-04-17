@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get_it/get_it.dart';
+import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
-import 'package:starwars_live/main.dart';
+import 'package:starwars_live/model/person.dart';
 import 'package:starwars_live/scanner/scanner_result_screen.dart';
+import 'package:starwars_live/server/server_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   static const routeName = "/menu_screen";
@@ -13,7 +16,7 @@ class MenuScreen extends StatefulWidget {
   _MenuScreenState createState() => _MenuScreenState();
 }
 
-const SCALE_MENU = 2.2;
+const SCALE_MENU = 2.1;
 const SCALE_NAV = 1.8;
 
 class _MenuScreenState extends State<MenuScreen> {
@@ -27,93 +30,75 @@ class _MenuScreenState extends State<MenuScreen> {
         children: [
           Expanded(
             flex: 4,
-            child: StarWarsMenuFrame(
-              child: GridView.count(
-                crossAxisCount: 2,
-                childAspectRatio: 1.11,
-                padding: EdgeInsets.only(top: 16),
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  StarWarsMenuButton(
-                    child: Text(
-                      "ID",
-                      textScaleFactor: SCALE_MENU,
+            child: Theme(
+              data: Theme.of(context).copyWith(textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: SCALE_MENU)),
+              child: StarWarsMenuFrame(
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  childAspectRatio: 1.11,
+                  padding: EdgeInsets.only(top: 16),
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  children: [
+                    StarWarsMenuButton(
+                      child: Text("ID"),
+                      onPressed: null,
                     ),
-                    onPressed: null,
-                  ),
-                  StarWarsMenuButton(
-                    child: Text(
-                      "Scanner",
-                      textScaleFactor: SCALE_MENU,
+                    StarWarsMenuButton(
+                      child: Text("Scanner"),
+                      onPressed: () => Navigator.of(context).pushNamed(ScannerResultScreen.routeName),
                     ),
-                    onPressed: () {
-                      Navigator.of(context)
-                          .pushNamed(ScannerResultScreen.routeName);
-                    },
-                  ),
-                  StarWarsMenuButton(
-                    child: Text(
-                      "Lizenzen",
-                      textScaleFactor: SCALE_MENU,
+                    StarWarsMenuButton(
+                      child: Text("Lizenzen"),
+                      onPressed: null,
                     ),
-                    onPressed: null,
-                  ),
-                  StarWarsMenuButton(
-                    child: Text(
-                      "",
-                      textScaleFactor: SCALE_MENU,
+                    StarWarsMenuButton(
+                      child: Text(""),
+                      onPressed: null,
                     ),
-                    onPressed: null,
-                  ),
-                  StarWarsMenuButton(
-                    child: Text(
-                      "Bank",
-                      textScaleFactor: SCALE_MENU,
+                    StarWarsMenuButton(
+                      child: Text("Bank"),
+                      onPressed: null,
                     ),
-                    onPressed: null,
-                  ),
-                  StarWarsMenuButton(
-                    child: Text(
-                      "",
-                      textScaleFactor: SCALE_MENU,
+                    StarWarsMenuButton(
+                      child: Text(""),
+                      onPressed: null,
                     ),
-                    onPressed: null,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
           Expanded(
             flex: 1,
-            child: StarWarsMenuFrame(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(8),
-                    child: StarWarsMenuButton(
-                      padding: EdgeInsets.all(16),
-                      child: Text(
-                        "Server",
-                        textScaleFactor: SCALE_NAV,
-                      ),
-                      onPressed: null,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8),
-                    child: StarWarsMenuButton(
+            child: Theme(
+              data: Theme.of(context).copyWith(textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: SCALE_NAV)),
+              child: StarWarsMenuFrame(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(8),
+                      child: StarWarsMenuButton(
                         padding: EdgeInsets.all(16),
-                        child: Text(
-                          "Logout",
-                          textScaleFactor: SCALE_NAV,
-                        ),
+                        child: Text("Server"),
                         onPressed: () {
-                          Navigator.of(context).pop();
-                        }),
-                  ),
-                ],
+                          GetIt.instance.get<DataService>().getDb().getById(PersonKey(1)).then((person) {
+                            Navigator.of(context).pushNamed(ServerScreen.routeName, arguments: person);
+                          });
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(8),
+                      child: StarWarsMenuButton(
+                        padding: EdgeInsets.all(16),
+                        child: Text("Logout"),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
