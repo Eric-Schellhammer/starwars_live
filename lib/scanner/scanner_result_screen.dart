@@ -2,24 +2,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
-import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/scanner/scan_screen.dart';
 
 class ScannerResultScreen extends StatefulWidget {
   static const routeName = "/scanner_result_screen";
 
-  ScannerResultScreen({Key key}) : super(key: key);
+  ScannerResultScreen({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ScannerResultScreenState();
 }
 
 class _ScannerResultScreenState extends State<ScannerResultScreen> {
-  ScanResult result;
+  ScanResult? result;
 
   @override
   Widget build(BuildContext context) {
-    result = ModalRoute.of(context).settings.arguments;
+    result = ModalRoute.of(context)?.settings.arguments as ScanResult;
     return Scaffold(
       body: Column(
         children: <Widget>[
@@ -33,10 +32,7 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
               child: Center(
                 child: StarWarsButton(
                   child: Text("Starte Scan"),
-                  onPressed: () {
-                    Navigator.of(context)
-                        .pushReplacementNamed(ScanScreen.routeName);
-                  },
+                  onPressed: () => Navigator.of(context).pushReplacementNamed(ScanScreen.routeName),
                 ),
               ),
             ),
@@ -48,16 +44,18 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
 
   Widget _displayScanResult() {
     if (result == null) {
-      return Center(
-        child: Text("Noch kein Scan durchgeführt"),
-      );
+      return Center(child: Text("Noch kein Scan durchgeführt"));
     }
-    final List<Widget> children = List();
+    if (!result!.idWasRecognized) {
+      return Center(child: Text("Unbekannte ID"));
+    }
+    final RecognizedScanResult recognizedResult = result as RecognizedScanResult;
+    final List<Widget> children = List.empty(growable: true);
     children.add(
       Padding(
         padding: EdgeInsets.only(bottom: 16),
         child: Text(
-          result.personName,
+          recognizedResult.personName,
           style: TextStyle(
             decoration: TextDecoration.underline,
           ),
@@ -66,19 +64,18 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
     );
 
     children.add(
-      Text(result.documentType.name),
+      Text(recognizedResult.documentType.name),
     );
 
-    if (result.additionalInformation != null &&
-        result.additionalInformation.isNotEmpty) {
+    if (recognizedResult.additionalInformation != null && recognizedResult.additionalInformation.isNotEmpty) {
       children.add(
-        Text(result.additionalInformation),
+        Text(recognizedResult.additionalInformation),
       ); // TODO make multiline
     }
 
     String idText;
     Color idColor;
-    if (result.idIsValid) {
+    if (recognizedResult.idIsValid) {
       idText = "ID gültig";
       idColor = Colors.green;
     } else {
@@ -92,7 +89,7 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
       ),
     );
 
-    if (!result.personIsOk)
+    if (!recognizedResult.personIsOk)
       children.add(
         Padding(
           padding: EdgeInsets.only(top: 8),
@@ -103,7 +100,7 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
     return Column(children: [
       Expanded(child: Center(child: Text("Kein Bild vorhanden"))),
       DefaultTextStyle(
-        style: Theme.of(context).textTheme.apply(fontSizeFactor: 2).bodyText1,
+        style: Theme.of(context).textTheme.apply(fontSizeFactor: 2).bodyText1!,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: children,

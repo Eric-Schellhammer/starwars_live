@@ -11,7 +11,7 @@ import 'package:starwars_live/scanner/scanner_result_screen.dart';
 class ScanScreen extends StatefulWidget {
   static const routeName = "/scan_screen";
 
-  ScanScreen({Key key}) : super(key: key);
+  ScanScreen({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ScanScreenState();
@@ -19,8 +19,8 @@ class ScanScreen extends StatefulWidget {
 
 class _ScanScreenState extends State<ScanScreen> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  Barcode result;
-  QRViewController controller;
+  Barcode? result;
+  QRViewController? controller;
   String errorMessage = "";
 
   // In order to get hot reload to work we need to pause the camera if the platform
@@ -29,9 +29,9 @@ class _ScanScreenState extends State<ScanScreen> {
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
-      controller.pauseCamera();
+      controller?.pauseCamera();
     } else if (Platform.isIOS) {
-      controller.resumeCamera();
+      controller?.resumeCamera();
     }
   }
 
@@ -82,8 +82,7 @@ class _ScanScreenState extends State<ScanScreen> {
                     StarWarsButton(
                         child: Text("Abbrechen"),
                         onPressed: () {
-                          Navigator.of(context).pushReplacementNamed(
-                              ScannerResultScreen.routeName);
+                          Navigator.of(context).pushReplacementNamed(ScannerResultScreen.routeName);
                         })
                   ],
                 ),
@@ -100,9 +99,11 @@ class _ScanScreenState extends State<ScanScreen> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
-        final String format = describeEnum(result.format);
-        if (format == "qrcode") {
-          _resolveScan(result.code);
+        if (result != null) {
+          final String format = describeEnum(result!.format);
+          if (format == "qrcode") {
+            _resolveScan(result!.code);
+          }
         }
       });
     });
@@ -113,8 +114,7 @@ class _ScanScreenState extends State<ScanScreen> {
     if (result.idWasRecognized) {
       controller?.pauseCamera();
       controller?.dispose();
-      Navigator.pushReplacementNamed(context, ScannerResultScreen.routeName,
-          arguments: result);
+      Navigator.pushReplacementNamed(context, ScannerResultScreen.routeName, arguments: result);
     } else {
       setState(() {
         errorMessage = "Unbekannte Signatur";

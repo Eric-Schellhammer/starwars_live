@@ -10,7 +10,7 @@ import 'package:starwars_live/main.dart';
 class LoginScreen extends StatefulWidget {
   static const routeName = "/login_screen";
 
-  LoginScreen({Key key}) : super(key: key);
+  LoginScreen({Key? key}) : super(key: key);
 
   @override
   _LoginScreenState createState() => _LoginScreenState();

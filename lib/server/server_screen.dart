@@ -18,8 +18,8 @@ class ServerScreen extends StatefulWidget {
 }
 
 class ServerScreenState extends State<ServerScreen> {
-  Person person;
-  DocumentLevel idDocumentLevel;
+  Person? person;
+  late DocumentLevel idDocumentLevel;
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +28,8 @@ class ServerScreenState extends State<ServerScreen> {
         final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT));
         final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
         db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) {
-              this.person = person;
-              db.getById(this.person.documentIdKey).then((document) => document as Document).then((documentLevel) {
+              this.person = person as Person;
+              db.getById(person.documentIdKey).then((document) => document as Document).then((documentLevel) {
                 setState(() {
                   idDocumentLevel = documentLevel.level;
                 });
@@ -45,7 +45,7 @@ class ServerScreenState extends State<ServerScreen> {
         body: StarWarsMenuFrame(
           child: Container(
             constraints: BoxConstraints.expand(),
-            child: person != null ? _getForPerson(person) : _getMissing(),
+            child: person != null ? _getForPerson(person!) : _getMissing(),
           ),
         ),
         floatingActionButton: FloatingActionButton(
@@ -61,13 +61,14 @@ class ServerScreenState extends State<ServerScreen> {
   }
 
   Widget _getForPerson(Person person) {
+    int scannerLevel = person.scannerLevel?.level ?? 0;
     return Center(
       child: Table(
         children: [
           TableRow(children: [Text("Vorname"), Text(person.firstName)]),
           TableRow(children: [Text("Nachname"), Text(person.lastName)]),
           TableRow(children: [Text("ID Dokument"), Text(idDocumentLevel.isValid() ? "gültig" : "Fälschung Stufe " + idDocumentLevel.level.toString())]),
-          TableRow(children: [Text("Scanner"), Text(person.scannerLevel.level == 0 ? "N/A" : "Stufe " + person.scannerLevel.level.toString())]),
+          TableRow(children: [Text("Scanner"), Text(scannerLevel == 0 ? "N/A" : "Stufe " + scannerLevel.toString())]),
         ], // TODO change password button
       ),
     );

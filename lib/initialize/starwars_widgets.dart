@@ -9,7 +9,7 @@ const SW_BORDER_SIDE = BorderSide(
 );
 
 class StarWarsBorder extends BeveledRectangleBorder {
-  StarWarsBorder({@required double corner})
+  StarWarsBorder({required double corner})
       : super(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(corner),
@@ -20,32 +20,32 @@ class StarWarsBorder extends BeveledRectangleBorder {
 
 class StarWarsButton extends OutlineButton {
   StarWarsButton({
-    Key key,
-    @required VoidCallback onPressed,
-    VoidCallback onLongPress,
-    MouseCursor mouseCursor,
-    ButtonTextTheme textTheme,
-    Color textColor,
-    Color disabledTextColor,
-    Color color,
-    Color focusColor,
-    Color hoverColor,
-    Color highlightColor,
-    Color splashColor,
-    double highlightElevation,
-    BorderSide borderSide,
-    Color disabledBorderColor,
-    Color highlightedBorderColor,
-    EdgeInsetsGeometry padding,
-    VisualDensity visualDensity,
-    ShapeBorder shape,
+    Key? key,
+    VoidCallback? onPressed,
+    VoidCallback? onLongPress,
+    MouseCursor? mouseCursor,
+    ButtonTextTheme? textTheme,
+    Color? textColor,
+    Color? disabledTextColor,
+    Color? color,
+    Color? focusColor,
+    Color? hoverColor,
+    Color? highlightColor,
+    Color? splashColor,
+    double? highlightElevation,
+    BorderSide? borderSide,
+    Color? disabledBorderColor,
+    Color? highlightedBorderColor,
+    EdgeInsetsGeometry? padding,
+    VisualDensity? visualDensity,
+    ShapeBorder? shape,
     Clip clipBehavior = Clip.none,
-    FocusNode focusNode,
+    FocusNode? focusNode,
     bool autofocus = false,
-    MaterialTapTargetSize materialTapTargetSize,
-    double borderWidth,
+    MaterialTapTargetSize? materialTapTargetSize,
+    double? borderWidth,
     double corner = 10.0,
-    Widget child,
+    required Widget child,
   }) : super(
             key: key,
             onPressed: onPressed,
@@ -78,10 +78,10 @@ class StarWarsButton extends OutlineButton {
 
 class StarWarsMenuButton extends StarWarsButton {
   StarWarsMenuButton({
-    @required VoidCallback onPressed,
-    Color disabledBorderColor,
-    EdgeInsetsGeometry padding,
-    Widget child,
+    VoidCallback? onPressed,
+    Color? disabledBorderColor,
+    EdgeInsetsGeometry? padding,
+    required Widget child,
   }) : super(
           onPressed: onPressed,
           disabledBorderColor: disabledBorderColor,
@@ -92,7 +92,7 @@ class StarWarsMenuButton extends StarWarsButton {
 }
 
 class StarWarsMenuFrame extends Padding {
-  StarWarsMenuFrame({Widget child})
+  StarWarsMenuFrame({required Widget child})
       : super(
           padding: EdgeInsets.all(8),
           child: StarWarsMenuButton(

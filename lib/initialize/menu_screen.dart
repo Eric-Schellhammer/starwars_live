@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:get_it/get_it.dart';
-import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
-import 'package:starwars_live/model/person.dart';
 import 'package:starwars_live/scanner/scanner_result_screen.dart';
 import 'package:starwars_live/server/server_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   static const routeName = "/menu_screen";
 
-  MenuScreen({Key key}) : super(key: key);
+  MenuScreen({Key? key}) : super(key: key);
 
   @override
   _MenuScreenState createState() => _MenuScreenState();
@@ -25,7 +22,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   @override
   Widget build(BuildContext context) {
-    userName = ModalRoute.of(context).settings.arguments;
+    userName = ModalRoute.of(context)?.settings.arguments as String? ?? "";
     return Scaffold(
       body: Column(
         children: [

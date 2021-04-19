@@ -8,7 +8,7 @@ import 'package:starwars_live/model/person.dart';
 class StarWarsDb {
   static final List<DbTable> _tables = [AccountTable(), PersonTable(), DocumentTable()];
 
-  static Map<DbTableKey, DbTable> _tablesByKey;
+  static Map<DbTableKey, DbTable>? _tablesByKey;
   final Future<Database> _database = _createDatabase();
 
   static Future<Database> _createDatabase() async {
@@ -22,7 +22,7 @@ class StarWarsDb {
     if (_tablesByKey == null) {
       // TODO make synchronized
       _tablesByKey = Map();
-      _tables.forEach((table) => _tablesByKey.putIfAbsent(table.getDbTableKey(), () => table));
+      _tables.forEach((table) => _tablesByKey!.putIfAbsent(table.getDbTableKey(), () => table));
     }
   }
 
@@ -30,21 +30,21 @@ class StarWarsDb {
     _tables.forEach((table) async {
       await database.execute("DROP TABLE IF EXISTS " + table.getDbTableKey().getTableName()); // TODO remove when total re-create is no longer desired
       await database.execute(table.createTableCommand());
-      _tablesByKey.putIfAbsent(table.getDbTableKey(), () => table);
+      _tablesByKey!.putIfAbsent(table.getDbTableKey(), () => table);
     });
   }
 
-  Future<int> insert(DbEntry entry) async => _database.then((db) => _tablesByKey[entry.getKey().getDbTableKey()].insert(db, entry));
+  Future<int> insert(DbEntry entry) async => _database.then((db) => _tablesByKey![entry.getKey().getDbTableKey()]!.insert(db, entry));
 
-  Future<int> update(DbEntry entry) async => _database.then((db) => _tablesByKey[entry.getKey().getDbTableKey()].update(db, entry));
+  Future<int> update(DbEntry entry) async => _database.then((db) => _tablesByKey![entry.getKey().getDbTableKey()]!.update(db, entry));
 
-  Future<int> delete(DbEntryKey id) async => _database.then((db) => _tablesByKey[id.getDbTableKey()].delete(db, id));
+  Future<int> delete(DbEntryKey id) async => _database.then((db) => _tablesByKey![id.getDbTableKey()]!.delete(db, id));
 
   Future<List<DB_ENTRY>> getAll<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> key) async =>
-      _database.then((db) => _tablesByKey[key].getAll(db)).then((list) => list as List<DB_ENTRY>);
+      _database.then((db) => _tablesByKey![key]!.getAll(db)).then((list) => list as List<DB_ENTRY>);
 
   Future<DB_ENTRY> getById<DB_ENTRY extends DbEntry>(DbEntryKey key) async =>
-      _database.then((db) => _tablesByKey[key.getDbTableKey()].getById(db, key)).then((entry) => entry as DB_ENTRY);
+      _database.then((db) => _tablesByKey![key.getDbTableKey()]!.getById(db, key)).then((entry) => entry as DB_ENTRY);
 
   Future<void> closeDatabase() async {
     final Database db = await _database;
@@ -116,14 +116,14 @@ abstract class DbTable<DB_ENTRY extends DbEntry, DB_ENTRY_KEY extends DbEntryKey
     return result.toList(growable: false).map((entryJson) => fromJson(entryJson)).toList(growable: false);
   }
 
-  Future<DB_ENTRY> getById(Database db, DB_ENTRY_KEY key) async {
-    final List<Map> results = await db.query(getDbTableKey().getTableName(), columns: _getAllColumnNames(), where: getIdColumnName() + ' = ?', whereArgs: [key.intKey]);
+  Future<DB_ENTRY?> getById(Database db, DB_ENTRY_KEY key) async {
+    final List<Map<String, dynamic>> results = await db.query(getDbTableKey().getTableName(), columns: _getAllColumnNames(), where: getIdColumnName() + ' = ?', whereArgs: [key.intKey]);
     if (results.length > 0) return fromJson(results.first);
     return null;
   }
 
   List<String> _getAllColumnNames() {
-    final List<String> allNames = List();
+    final List<String> allNames = List.empty(growable: true);
     allNames.add(getIdColumnName());
     allNames.addAll(getDataColumnDefinitions().keys);
     return allNames;

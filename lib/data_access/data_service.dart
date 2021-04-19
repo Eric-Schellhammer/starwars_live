@@ -7,7 +7,7 @@ import 'package:starwars_live/model/validation.dart';
 const String LOGGED_IN_ACCOUNT = "logged-in-account";
 
 abstract class DataService {
-  StarWarsDb starWarsDb;
+  late final StarWarsDb starWarsDb;
 
   DataService() {
     starWarsDb = StarWarsDb();
@@ -32,7 +32,7 @@ abstract class DataService {
   bool isAvailable(String serverIpAddress);
 
   /// returns the AccountKey or null
-  Future<AccountKey> validateAccount(String userName, String password);
+  Future<AccountKey?> validateAccount(String userName, String password);
 
   ScanResult scan(String data);
 }
@@ -47,41 +47,11 @@ class DataServiceImpl extends DataService {
   @override
   ScanResult scan(String data) {
     // TODO: implement scan
-    final ScanResult result = ScanResult();
-    if (data == "4711") {
-      result.idWasRecognized = true;
-      result.personName = "Varian Caltrel";
-      result.documentType = DocumentType.PERSONAL_ID;
-      result.idIsValid = true;
-      result.personIsOk = true;
-    }
-    if (data == "4711-1") {
-      result.idWasRecognized = true;
-      result.personName = "Varian Caltrel";
-      result.documentType = DocumentType.CAPTAINS_LICENCE;
-      result.idIsValid = false;
-      result.personIsOk = true;
-    }
-    if (data == "4711-2") {
-      result.idWasRecognized = true;
-      result.personName = "Varian Caltrel";
-      result.documentType = DocumentType.PERSONAL_ID;
-      result.idIsValid = true;
-      result.personIsOk = false;
-    }
-    if (data == "4711-3") {
-      result.idWasRecognized = true;
-      result.personName = "Varian Caltrel";
-      result.documentType = DocumentType.VEHICLE_REGISTRATION;
-      result.additionalInformation = "\"Rocinante\"";
-      result.idIsValid = true;
-      result.personIsOk = true;
-    }
-    return result;
+    return ScanResult();
   }
 
   @override
-  Future<AccountKey> validateAccount(String userName, String password) {
+  Future<AccountKey?> validateAccount(String userName, String password) {
     return getDb().getAll(AccountKey.dbTableKey).then((accounts) {
       final matches = accounts.where((account) => account.loginName == userName).where((account) => account.password == password);
       return matches.isEmpty ? null : matches.first.key;
@@ -90,11 +60,25 @@ class DataServiceImpl extends DataService {
 }
 
 class ScanResult {
-  bool idWasRecognized = false;
-  String image;
+  final bool idWasRecognized;
+
+  ScanResult({this.idWasRecognized = false});
+}
+
+class RecognizedScanResult extends ScanResult {
+  String? image;
   String personName;
   DocumentType documentType;
   String additionalInformation;
   bool idIsValid;
   bool personIsOk;
+
+  RecognizedScanResult({
+    this.image,
+    required this.personName,
+    required this.documentType,
+    required this.additionalInformation,
+    required this.idIsValid,
+    required this.personIsOk,
+  }) : super(idWasRecognized: true);
 }

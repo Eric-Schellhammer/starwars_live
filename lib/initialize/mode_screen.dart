@@ -10,7 +10,7 @@ import 'package:starwars_live/initialize/starwars_widgets.dart';
 enum Modes { LIVE, COPY, LOCAL }
 
 class ModeScreen extends StatefulWidget {
-  ModeScreen({Key key}) : super(key: key);
+  ModeScreen({Key? key}) : super(key: key);
 
   @override
   _ModeScreenState createState() => _ModeScreenState();
@@ -37,11 +37,12 @@ class _ModeScreenState extends State<ModeScreen> {
   }
 
   List<Widget> _getChildren() {
-    final List<Widget> children = List();
-    children.add(Text(
-      "Server-Zugriff:",
-      style: TextStyle(fontSize: 25),
-    ));
+    final List<Widget> children = [
+      Text(
+        "Server-Zugriff:",
+        style: TextStyle(fontSize: 25),
+      )
+    ];
     children.add(DropdownButton<Modes>(
         value: currentMode,
         items: Modes.values
@@ -50,10 +51,10 @@ class _ModeScreenState extends State<ModeScreen> {
                   child: Text(_modeName(mode)),
                 ))
             .toList(),
-        onChanged: (Modes newMode) {
+        onChanged: (Modes? newMode) {
           setState(() {
             errorMessage = "";
-            currentMode = newMode;
+            currentMode = newMode ?? Modes.LOCAL;
           });
         }));
     if (currentMode != Modes.LOCAL) {

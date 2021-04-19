@@ -24,10 +24,16 @@ class Person extends DbEntry {
   PersonKey key;
   String firstName;
   String lastName;
-  ScannerLevel scannerLevel;
+  ScannerLevel? scannerLevel;
   DocumentKey documentIdKey;
 
-  Person({this.key, this.firstName, this.lastName, this.scannerLevel, this.documentIdKey});
+  Person({
+    required this.key,
+    required this.firstName,
+    required this.lastName,
+    this.scannerLevel,
+    required this.documentIdKey,
+  });
 
   factory Person.fromJson(Map<String, dynamic> data) => new Person(
         key: PersonKey(data[_DB_ID]),
@@ -47,7 +53,7 @@ class Person extends DbEntry {
         _DB_ID: key.intKey,
         _DB_FIRST_NAME: firstName,
         _DB_LAST_NAME: lastName,
-        _DB_SCANNER_LEVEL: scannerLevel != null ? scannerLevel.level : 0,
+        _DB_SCANNER_LEVEL: scannerLevel?.level ?? 0,
         _DB_DOCUMENT_ID_KEY: documentIdKey.intKey,
       };
 }

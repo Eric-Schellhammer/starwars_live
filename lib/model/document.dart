@@ -20,7 +20,7 @@ class DocumentType {
   }
 
   static DocumentType fromKey(int key) {
-    return _typeByKey[key];
+    return _typeByKey[key] ?? UNKNOWN;
   }
 
   @override
@@ -34,6 +34,7 @@ class DocumentType {
   static final VEHICLE_REGISTRATION = DocumentType._(3, "Schiffsregistrierung");
   static final WEAPON_LICENCE = DocumentType._(4, "Waffenlizenz");
   static final SECTOR_TRADE_LICENCE = DocumentType._(5, "Sektor-Handelslizenz");
+  static final UNKNOWN = DocumentType._(0, "unbekanntes Dokument");
 }
 
 class DocumentKey extends DbEntryKey {
@@ -53,7 +54,13 @@ class Document extends DbEntry {
   DocumentType type;
   DocumentLevel level;
 
-  Document({this.key, this.code, this.ownerKey, this.type, this.level});
+  Document({
+    required this.key,
+    required this.code,
+    required this.ownerKey,
+    required this.type,
+    required this.level,
+  });
 
   factory Document.fromJson(Map<String, dynamic> data) => new Document(
         key: DocumentKey(data[_DB_ID]),

@@ -1,4 +1,3 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:starwars_live/data_access/local_database.dart';
 import 'package:starwars_live/model/person.dart';
 
@@ -25,7 +24,12 @@ class Account extends DbEntry {
   String password;
   PersonKey personKey;
 
-  Account({this.key, this.loginName, this.password, this.personKey});
+  Account({
+    required this.key,
+    required this.loginName,
+    required this.password,
+    required this.personKey,
+  });
 
   factory Account.fromJson(Map<String, dynamic> data) => new Account(
         key: AccountKey(data[_DB_ID]),
