@@ -10,6 +10,32 @@ const String _DB_OWNER = "ownerKey";
 const String _DB_TYPE = "type";
 const String _DB_LEVEL = "level";
 
+class DocumentType {
+  static final Map<int, DocumentType> _typeByKey = Map();
+  final int _key;
+  final String name;
+
+  DocumentType._(this._key, this.name) {
+    _typeByKey.putIfAbsent(_key, () => this);
+  }
+
+  static DocumentType fromKey(int key) {
+    return _typeByKey[key];
+  }
+
+  @override
+  bool operator ==(Object other) => identical(this, other) || other is DocumentType && runtimeType == other.runtimeType && _key == other._key;
+
+  @override
+  int get hashCode => _key.hashCode;
+
+  static final PERSONAL_ID = DocumentType._(1, "Persönliche ID");
+  static final CAPTAINS_LICENCE = DocumentType._(2, "Kapitänslizenz");
+  static final VEHICLE_REGISTRATION = DocumentType._(3, "Schiffsregistrierung");
+  static final WEAPON_LICENCE = DocumentType._(4, "Waffenlizenz");
+  static final SECTOR_TRADE_LICENCE = DocumentType._(5, "Sektor-Handelslizenz");
+}
+
 class DocumentKey extends DbEntryKey {
   static final DbTableKey<Document> dbTableKey = DbTableKey<Document>("Document");
 
@@ -24,7 +50,7 @@ class Document extends DbEntry {
   DocumentKey key;
   String code;
   PersonKey ownerKey;
-  int type;
+  DocumentType type;
   DocumentLevel level;
 
   Document({this.key, this.code, this.ownerKey, this.type, this.level});
@@ -33,7 +59,7 @@ class Document extends DbEntry {
         key: DocumentKey(data[_DB_ID]),
         code: data[_DB_CODE],
         ownerKey: PersonKey(data[_DB_OWNER]),
-        type: data[_DB_TYPE],
+        type: DocumentType.fromKey(data[_DB_TYPE]),
         level: DocumentLevel.createForgery(data[_DB_LEVEL]),
       );
 
@@ -47,7 +73,7 @@ class Document extends DbEntry {
         _DB_ID: key.intKey,
         _DB_CODE: code,
         _DB_OWNER: ownerKey.intKey,
-        _DB_TYPE: type,
+        _DB_TYPE: type._key,
         _DB_LEVEL: level.level,
       };
 }

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
+import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/scanner/scan_screen.dart';
 
 class ScannerResultScreen extends StatefulWidget {
@@ -65,7 +66,7 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
     );
 
     children.add(
-      Text(_translateDocumentType(result.documentType)),
+      Text(result.documentType.name),
     );
 
     if (result.additionalInformation != null &&
@@ -109,23 +110,6 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
         ),
       )
     ]);
-  }
-
-  String _translateDocumentType(DocumentType documentType) {
-    switch (documentType) {
-      case DocumentType.PERSONAL_ID:
-        return "Persönliche ID";
-      case DocumentType.CAPTAINS_LICENCE:
-        return "Kapitänslizenz";
-      case DocumentType.VEHICLE_REGISTRATION:
-        return "Schiffsregistrierung";
-      case DocumentType.WEAPON_LICENCE:
-        return "Waffenlizenz";
-      case DocumentType.SECTOR_TRADE_LICENCE:
-        return "Sektor-Handelslizenz";
-      default:
-        return "Unbekanntes Dokument";
-    }
   }
 
   Widget _wrapInBar(String text, Color color) {
