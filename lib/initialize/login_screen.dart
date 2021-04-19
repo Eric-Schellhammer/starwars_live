@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/menu_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
@@ -89,8 +90,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _checkLogin() {
-    GetIt.instance.get<DataService>().validateAccount(userName, password).then((accepted) {
-      if (accepted) {
+    GetIt.instance.get<DataService>().validateAccount(userName, password).then((accountKey) {
+      if (accountKey != null) {
+        SharedPreferences.getInstance().then((preferences) => preferences.setInt(LOGGED_IN_ACCOUNT, accountKey.intKey));
         Navigator.of(context).pushNamed(MenuScreen.routeName, arguments: userName);
       } else {
         setState(() {

@@ -4,6 +4,8 @@ import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';
 import 'package:starwars_live/model/validation.dart';
 
+const String LOGGED_IN_ACCOUNT = "logged-in-account";
+
 enum DocumentType { PERSONAL_ID, CAPTAINS_LICENCE, VEHICLE_REGISTRATION, WEAPON_LICENCE, SECTOR_TRADE_LICENCE }
 
 abstract class DataService {
@@ -31,7 +33,8 @@ abstract class DataService {
 
   bool isAvailable(String serverIpAddress);
 
-  Future<bool> validateAccount(String userName, String password);
+  /// returns the AccountKey or null
+  Future<AccountKey> validateAccount(String userName, String password);
 
   ScanResult scan(String data);
 }
@@ -80,8 +83,11 @@ class DataServiceImpl extends DataService {
   }
 
   @override
-  Future<bool> validateAccount(String userName, String password) {
-    return getDb().getAll(AccountKey.dbTableKey).then((accounts) => accounts.where((element) => element.loginName == userName).any((element) => element.password == password));
+  Future<AccountKey> validateAccount(String userName, String password) {
+    return getDb().getAll(AccountKey.dbTableKey).then((accounts) {
+      final matches = accounts.where((account) => account.loginName == userName).where((account) => account.password == password);
+      return matches.isEmpty ? null : matches.first.key;
+    });
   }
 }
 

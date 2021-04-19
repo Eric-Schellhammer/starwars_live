@@ -83,11 +83,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: StarWarsMenuButton(
                         padding: EdgeInsets.all(16),
                         child: Text("Server"),
-                        onPressed: () { // TODO used logged in person key
-                          GetIt.instance.get<DataService>().getDb().getById(PersonKey(2)).then((person) {
-                            Navigator.of(context).pushNamed(ServerScreen.routeName, arguments: person);
-                          });
-                        },
+                        onPressed: () => Navigator.of(context).pushNamed(ServerScreen.routeName),
                       ),
                     ),
                     Padding(
