@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:starwars_live/documents/id_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/scanner/scanner_result_screen.dart';
 import 'package:starwars_live/server/server_screen.dart';
@@ -40,7 +41,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   children: [
                     StarWarsMenuButton(
                       child: Text("ID"),
-                      onPressed: null,
+                      onPressed: () => Navigator.of(context).pushNamed(IdScreen.routeName),
                     ),
                     StarWarsMenuButton(
                       child: Text("Scanner"),

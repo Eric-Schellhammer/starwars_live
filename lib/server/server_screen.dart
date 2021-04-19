@@ -29,10 +29,8 @@ class ServerScreenState extends State<ServerScreen> {
         final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
         db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) {
               this.person = person as Person;
-              db.getById(person.documentIdKey).then((document) => document as Document).then((documentLevel) {
-                setState(() {
-                  idDocumentLevel = documentLevel.level;
-                });
+              db.getById(person.documentIdKey).then((document) {
+                setState(() => idDocumentLevel = (document as Document).level);
               });
             }));
       });

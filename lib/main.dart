@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:starwars_live/documents/id_screen.dart';
 import 'package:starwars_live/initialize/application_config.dart';
 import 'package:starwars_live/initialize/login_screen.dart';
 import 'package:starwars_live/initialize/menu_screen.dart';
@@ -30,6 +31,7 @@ class StarWarsLive extends StatelessWidget {
         MenuScreen.routeName: (ctx) => MenuScreen(),
         ScanScreen.routeName: (ctx) => ScanScreen(),
         ScannerResultScreen.routeName: (ctx) => ScannerResultScreen(),
+        IdScreen.routeName: (ctx) => IdScreen(),
         ServerScreen.routeName: (ctx) => ServerScreen(),
       },
     );
