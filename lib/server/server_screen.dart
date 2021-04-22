@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starwars_live/data_access/data_service.dart';
@@ -19,7 +18,7 @@ class ServerScreen extends StatefulWidget {
 
 class ServerScreenState extends State<ServerScreen> {
   Person? person;
-  late DocumentLevel idDocumentLevel;
+  late DocumentLevel? idDocumentLevel;
 
   @override
   Widget build(BuildContext context) {
@@ -40,15 +39,8 @@ class ServerScreenState extends State<ServerScreen> {
     return Theme(
       data: Theme.of(context).copyWith(textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 2.0)),
       child: Scaffold(
-        body: StarWarsMenuFrame(
-          child: Container(
-            constraints: BoxConstraints.expand(),
-            child: person != null ? _getForPerson(person!) : _getMissing(),
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          child: Text("OK"),
-          onPressed: () => Navigator.of(context).pop(),
+        body: StarWarsSwipeToDismissScreen(
+          child: person != null ? _getForPerson(person!) : _getMissing(),
         ),
       ),
     );
@@ -65,7 +57,7 @@ class ServerScreenState extends State<ServerScreen> {
         children: [
           TableRow(children: [Text("Vorname"), Text(person.firstName)]),
           TableRow(children: [Text("Nachname"), Text(person.lastName)]),
-          TableRow(children: [Text("ID Dokument"), Text(idDocumentLevel.isValid() ? "gültig" : "Fälschung Stufe " + idDocumentLevel.level.toString())]),
+          TableRow(children: [Text("ID Dokument"), Text(idDocumentLevel!.isValid() ? "gültig" : "Fälschung Stufe " + idDocumentLevel!.level.toString())]),
           TableRow(children: [Text("Scanner"), Text(scannerLevel == 0 ? "N/A" : "Stufe " + scannerLevel.toString())]),
         ], // TODO change password button
       ),

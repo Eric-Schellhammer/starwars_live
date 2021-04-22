@@ -40,11 +40,17 @@ class StarWarsDb {
 
   Future<int> delete(DbEntryKey id) async => _database.then((db) => _tablesByKey![id.getDbTableKey()]!.delete(db, id));
 
-  Future<List<DB_ENTRY>> getAll<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> key) async =>
-      _database.then((db) => _tablesByKey![key]!.getAll(db)).then((list) => list as List<DB_ENTRY>);
+  Future<List<DB_ENTRY>> getAll<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> table) async =>
+      _database.then((db) => _tablesByKey![table]!.getAll(db)).then((list) => list as List<DB_ENTRY>);
 
   Future<DB_ENTRY> getById<DB_ENTRY extends DbEntry>(DbEntryKey key) async =>
       _database.then((db) => _tablesByKey![key.getDbTableKey()]!.getById(db, key)).then((entry) => entry as DB_ENTRY);
+
+  Future<List<DB_ENTRY>> getWhere<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> table, void Function(ConditionBuilder) conditions) {
+    final ConditionBuilder builder = ConditionBuilder();
+    conditions.call(builder);
+    return _database.then((db) => _tablesByKey![table]!.getWhere(db, builder)).then((list) => list as List<DB_ENTRY>);
+  }
 
   Future<void> closeDatabase() async {
     final Database db = await _database;
@@ -117,9 +123,15 @@ abstract class DbTable<DB_ENTRY extends DbEntry, DB_ENTRY_KEY extends DbEntryKey
   }
 
   Future<DB_ENTRY?> getById(Database db, DB_ENTRY_KEY key) async {
-    final List<Map<String, dynamic>> results = await db.query(getDbTableKey().getTableName(), columns: _getAllColumnNames(), where: getIdColumnName() + ' = ?', whereArgs: [key.intKey]);
+    final List<Map<String, dynamic>> results =
+        await db.query(getDbTableKey().getTableName(), columns: _getAllColumnNames(), where: getIdColumnName() + ' = ?', whereArgs: [key.intKey]);
     if (results.length > 0) return fromJson(results.first);
     return null;
+  }
+
+  Future<List<DB_ENTRY>> getWhere(Database db, ConditionBuilder conditions) async {
+    final result = await db.query(getDbTableKey().getTableName(), columns: _getAllColumnNames(), where: conditions.where, whereArgs: conditions.whereArgs);
+    return result.toList(growable: false).map((entryJson) => fromJson(entryJson)).toList(growable: false);
   }
 
   List<String> _getAllColumnNames() {
@@ -127,5 +139,28 @@ abstract class DbTable<DB_ENTRY extends DbEntry, DB_ENTRY_KEY extends DbEntryKey
     allNames.add(getIdColumnName());
     allNames.addAll(getDataColumnDefinitions().keys);
     return allNames;
+  }
+}
+
+class ConditionBuilder {
+  String where = "";
+  final List<dynamic> whereArgs = List.empty(growable: true);
+
+  ConditionBuilder whereEquals(String columnName, dynamic value) {
+    if (where.isNotEmpty) {
+      where += " AND ";
+    }
+    where += columnName + " =?";
+    whereArgs.add(value);
+    return this;
+  }
+
+  ConditionBuilder whereNotEquals(String columnName, dynamic value) {
+    if (where.isNotEmpty) {
+      where += " AND NOT ";
+    }
+    where += columnName + " =?";
+    whereArgs.add(value);
+    return this;
   }
 }

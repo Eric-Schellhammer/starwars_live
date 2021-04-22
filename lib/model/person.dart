@@ -4,12 +4,6 @@ import 'package:starwars_live/model/validation.dart';
 
 /// This is an in-game character, i.e. SC or NSC
 
-const String _DB_ID = "id";
-const String _DB_FIRST_NAME = "first_name";
-const String _DB_LAST_NAME = "last_name";
-const String _DB_SCANNER_LEVEL = "scanner_level";
-const String _DB_DOCUMENT_ID_KEY = "document_id";
-
 class PersonKey extends DbEntryKey {
   static final DbTableKey<Person> dbTableKey = DbTableKey<Person>("Person");
 
@@ -21,6 +15,12 @@ class PersonKey extends DbEntryKey {
 }
 
 class Person extends DbEntry {
+  static const String COL_ID = "id";
+  static const String COL_FIRST_NAME = "first_name";
+  static const String COL_LAST_NAME = "last_name";
+  static const String COL_SCANNER_LEVEL = "scanner_level";
+  static const String COL_DOCUMENT_ID_KEY = "document_id";
+
   PersonKey key;
   String firstName;
   String lastName;
@@ -36,11 +36,11 @@ class Person extends DbEntry {
   });
 
   factory Person.fromJson(Map<String, dynamic> data) => new Person(
-        key: PersonKey(data[_DB_ID]),
-        firstName: data[_DB_FIRST_NAME],
-        lastName: data[_DB_LAST_NAME],
-        scannerLevel: ScannerLevel(data[_DB_SCANNER_LEVEL]),
-        documentIdKey: DocumentKey(data[_DB_DOCUMENT_ID_KEY]),
+        key: PersonKey(data[COL_ID]),
+        firstName: data[COL_FIRST_NAME],
+        lastName: data[COL_LAST_NAME],
+        scannerLevel: ScannerLevel(data[COL_SCANNER_LEVEL]),
+        documentIdKey: DocumentKey(data[COL_DOCUMENT_ID_KEY]),
       );
 
   @override
@@ -50,11 +50,11 @@ class Person extends DbEntry {
 
   @override
   Map<String, dynamic> toJson() => {
-        _DB_ID: key.intKey,
-        _DB_FIRST_NAME: firstName,
-        _DB_LAST_NAME: lastName,
-        _DB_SCANNER_LEVEL: scannerLevel?.level ?? 0,
-        _DB_DOCUMENT_ID_KEY: documentIdKey.intKey,
+        COL_ID: key.intKey,
+        COL_FIRST_NAME: firstName,
+        COL_LAST_NAME: lastName,
+        COL_SCANNER_LEVEL: scannerLevel?.level ?? 0,
+        COL_DOCUMENT_ID_KEY: documentIdKey.intKey,
       };
 }
 
@@ -66,16 +66,16 @@ class PersonTable extends DbTable<Person, PersonKey> {
 
   @override
   String getIdColumnName() {
-    return _DB_ID;
+    return Person.COL_ID;
   }
 
   @override
   Map<String, String> getDataColumnDefinitions() {
     return {
-      _DB_FIRST_NAME: "TEXT",
-      _DB_LAST_NAME: "TEXT",
-      _DB_SCANNER_LEVEL: "INTEGER",
-      _DB_DOCUMENT_ID_KEY: "INTEGER",
+      Person.COL_FIRST_NAME: "TEXT",
+      Person.COL_LAST_NAME: "TEXT",
+      Person.COL_SCANNER_LEVEL: "INTEGER",
+      Person.COL_DOCUMENT_ID_KEY: "INTEGER",
     };
   }
 

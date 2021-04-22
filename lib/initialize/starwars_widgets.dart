@@ -102,3 +102,22 @@ class StarWarsMenuFrame extends Padding {
           ),
         );
 }
+
+class StarWarsSwipeToDismissScreen extends StatelessWidget {
+  final Widget child;
+
+  StarWarsSwipeToDismissScreen({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: StarWarsMenuFrame(
+        child: Container(
+          constraints: BoxConstraints.expand(),
+          child: child,
+        ),
+      ),
+      onHorizontalDragEnd: (details) => Navigator.of(context).pop(),
+    );
+  }
+}

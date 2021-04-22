@@ -23,6 +23,7 @@ abstract class DataService {
     db.insert(Account(key: AccountKey(1), loginName: "abc", password: "123", personKey: MARTY));
     db.insert(Person(key: MARTY, firstName: "Marty", lastName: "McFly", documentIdKey: DocumentKey(1), scannerLevel: ScannerLevel(7)));
     db.insert(Document(key: DocumentKey(1), code: "UZGOJ", ownerKey: MARTY, type: DocumentType.PERSONAL_ID, level: DocumentLevel.createValid()));
+    db.insert(Document(key: DocumentKey(3), code: "USJBE", ownerKey: MARTY, type: DocumentType.VEHICLE_REGISTRATION, level: DocumentLevel.createForgery(3)));
     final PersonKey BIFF = PersonKey(2);
     db.insert(Account(key: AccountKey(2), loginName: "abcd", password: "1234", personKey: BIFF));
     db.insert(Person(key: BIFF, firstName: "Biff", lastName: "Tannen", documentIdKey: DocumentKey(2)));
@@ -51,11 +52,10 @@ class DataServiceImpl extends DataService {
   }
 
   @override
-  Future<AccountKey?> validateAccount(String userName, String password) {
-    return getDb().getAll(AccountKey.dbTableKey).then((accounts) {
-      final matches = accounts.where((account) => account.loginName == userName).where((account) => account.password == password);
-      return matches.isEmpty ? null : matches.first.key;
-    });
+  Future<AccountKey?> validateAccount(String userName, String password) async {
+    final matches =
+        await getDb().getWhere(AccountKey.dbTableKey, (conditions) => conditions.whereEquals(Account.COL_LOGIN_NAME, userName).whereEquals(Account.COL_PASSWORD, password));
+    return matches.isEmpty ? null : matches.first.key;
   }
 }
 

@@ -4,19 +4,13 @@ import 'package:starwars_live/model/validation.dart';
 
 /// This is an in-game character, i.e. SC or NSC
 
-const String _DB_ID = "id";
-const String _DB_CODE = "code";
-const String _DB_OWNER = "ownerKey";
-const String _DB_TYPE = "type";
-const String _DB_LEVEL = "level";
-
 class DocumentType {
   static final Map<int, DocumentType> _typeByKey = Map();
-  final int _key;
+  final int intKey;
   final String name;
 
-  DocumentType._(this._key, this.name) {
-    _typeByKey.putIfAbsent(_key, () => this);
+  DocumentType._(this.intKey, this.name) {
+    _typeByKey.putIfAbsent(intKey, () => this);
   }
 
   static DocumentType fromKey(int key) {
@@ -24,10 +18,10 @@ class DocumentType {
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is DocumentType && runtimeType == other.runtimeType && _key == other._key;
+  bool operator ==(Object other) => identical(this, other) || other is DocumentType && runtimeType == other.runtimeType && intKey == other.intKey;
 
   @override
-  int get hashCode => _key.hashCode;
+  int get hashCode => intKey.hashCode;
 
   static final PERSONAL_ID = DocumentType._(1, "Persönliche ID");
   static final CAPTAINS_LICENCE = DocumentType._(2, "Kapitänslizenz");
@@ -48,6 +42,12 @@ class DocumentKey extends DbEntryKey {
 }
 
 class Document extends DbEntry {
+  static const String COL_ID = "id";
+  static const String COL_CODE = "code";
+  static const String COL_OWNER = "ownerKey";
+  static const String COL_TYPE = "type";
+  static const String COL_LEVEL = "level";
+
   DocumentKey key;
   String code;
   PersonKey ownerKey;
@@ -63,11 +63,11 @@ class Document extends DbEntry {
   });
 
   factory Document.fromJson(Map<String, dynamic> data) => new Document(
-        key: DocumentKey(data[_DB_ID]),
-        code: data[_DB_CODE],
-        ownerKey: PersonKey(data[_DB_OWNER]),
-        type: DocumentType.fromKey(data[_DB_TYPE]),
-        level: DocumentLevel.createForgery(data[_DB_LEVEL]),
+        key: DocumentKey(data[COL_ID]),
+        code: data[COL_CODE],
+        ownerKey: PersonKey(data[COL_OWNER]),
+        type: DocumentType.fromKey(data[COL_TYPE]),
+        level: DocumentLevel.createForgery(data[COL_LEVEL]),
       );
 
   @override
@@ -77,11 +77,11 @@ class Document extends DbEntry {
 
   @override
   Map<String, dynamic> toJson() => {
-        _DB_ID: key.intKey,
-        _DB_CODE: code,
-        _DB_OWNER: ownerKey.intKey,
-        _DB_TYPE: type._key,
-        _DB_LEVEL: level.level,
+        COL_ID: key.intKey,
+        COL_CODE: code,
+        COL_OWNER: ownerKey.intKey,
+        COL_TYPE: type.intKey,
+        COL_LEVEL: level.level,
       };
 }
 
@@ -93,16 +93,16 @@ class DocumentTable extends DbTable<Document, DocumentKey> {
 
   @override
   String getIdColumnName() {
-    return _DB_ID;
+    return Document.COL_ID;
   }
 
   @override
   Map<String, String> getDataColumnDefinitions() {
     return {
-      _DB_CODE: "TEXT",
-      _DB_OWNER: "INTEGER",
-      _DB_TYPE: "INTEGER",
-      _DB_LEVEL: "INTEGER",
+      Document.COL_CODE: "TEXT",
+      Document.COL_OWNER: "INTEGER",
+      Document.COL_TYPE: "INTEGER",
+      Document.COL_LEVEL: "INTEGER",
     };
   }
 

@@ -3,11 +3,6 @@ import 'package:starwars_live/model/person.dart';
 
 /// This is a login account, associated to a Person
 
-const String _DB_ID = "id";
-const String _DB_LOGIN_NAME = "login_name";
-const String _DB_PASSWORD = "password";
-const String _DB_PERSON = "person";
-
 class AccountKey extends DbEntryKey {
   static final DbTableKey<Account> dbTableKey = DbTableKey<Account>("Account");
 
@@ -19,6 +14,11 @@ class AccountKey extends DbEntryKey {
 }
 
 class Account extends DbEntry {
+  static const String COL_ID = "id";
+  static const String COL_LOGIN_NAME = "login_name";
+  static const String COL_PASSWORD = "password";
+  static const String COL_PERSON = "person";
+
   AccountKey key;
   String loginName;
   String password;
@@ -32,10 +32,10 @@ class Account extends DbEntry {
   });
 
   factory Account.fromJson(Map<String, dynamic> data) => new Account(
-        key: AccountKey(data[_DB_ID]),
-        loginName: data[_DB_LOGIN_NAME],
-        password: data[_DB_PASSWORD],
-        personKey: PersonKey(data[_DB_PERSON]),
+        key: AccountKey(data[COL_ID]),
+        loginName: data[COL_LOGIN_NAME],
+        password: data[COL_PASSWORD],
+        personKey: PersonKey(data[COL_PERSON]),
       );
 
   @override
@@ -45,10 +45,10 @@ class Account extends DbEntry {
 
   @override
   Map<String, dynamic> toJson() => {
-        _DB_ID: key.intKey,
-        _DB_LOGIN_NAME: loginName,
-        _DB_PASSWORD: password,
-        _DB_PERSON: personKey.intKey,
+        COL_ID: key.intKey,
+        COL_LOGIN_NAME: loginName,
+        COL_PASSWORD: password,
+        COL_PERSON: personKey.intKey,
       };
 }
 
@@ -60,15 +60,15 @@ class AccountTable extends DbTable<Account, AccountKey> {
 
   @override
   String getIdColumnName() {
-    return _DB_ID;
+    return Account.COL_ID;
   }
 
   @override
   Map<String, String> getDataColumnDefinitions() {
     return {
-      _DB_LOGIN_NAME: "TEXT",
-      _DB_PASSWORD: "TEXT",
-      _DB_PERSON: "INTEGER",
+      Account.COL_LOGIN_NAME: "TEXT",
+      Account.COL_PASSWORD: "TEXT",
+      Account.COL_PERSON: "INTEGER",
     };
   }
 
