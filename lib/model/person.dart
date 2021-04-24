@@ -20,12 +20,14 @@ class Person extends DbEntry {
   static const String COL_LAST_NAME = "last_name";
   static const String COL_SCANNER_LEVEL = "scanner_level";
   static const String COL_DOCUMENT_ID_KEY = "document_id";
+  static const String COL_WANTED = "wanted";
 
   PersonKey key;
   String firstName;
   String lastName;
   ScannerLevel? scannerLevel;
   DocumentKey documentIdKey;
+  bool isWanted;
 
   Person({
     required this.key,
@@ -33,6 +35,7 @@ class Person extends DbEntry {
     required this.lastName,
     this.scannerLevel,
     required this.documentIdKey,
+    this.isWanted = false,
   });
 
   factory Person.fromJson(Map<String, dynamic> data) => new Person(
@@ -41,6 +44,7 @@ class Person extends DbEntry {
         lastName: data[COL_LAST_NAME],
         scannerLevel: ScannerLevel(data[COL_SCANNER_LEVEL]),
         documentIdKey: DocumentKey(data[COL_DOCUMENT_ID_KEY]),
+        isWanted: data[COL_WANTED] != 0,
       );
 
   @override
@@ -55,6 +59,7 @@ class Person extends DbEntry {
         COL_LAST_NAME: lastName,
         COL_SCANNER_LEVEL: scannerLevel?.level ?? 0,
         COL_DOCUMENT_ID_KEY: documentIdKey.intKey,
+        COL_WANTED: isWanted ? 1 : 0,
       };
 }
 
@@ -76,6 +81,7 @@ class PersonTable extends DbTable<Person, PersonKey> {
       Person.COL_LAST_NAME: "TEXT",
       Person.COL_SCANNER_LEVEL: "INTEGER",
       Person.COL_DOCUMENT_ID_KEY: "INTEGER",
+      Person.COL_WANTED: "INTEGER",
     };
   }
 

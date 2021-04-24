@@ -19,14 +19,14 @@ abstract class DataService {
   }
 
   void _loadDefaultDb(StarWarsDb db) {
+    // TODO remove this method
     final PersonKey MARTY = PersonKey(1);
     db.insert(Account(key: AccountKey(1), loginName: "abc", password: "123", personKey: MARTY));
     db.insert(Person(key: MARTY, firstName: "Marty", lastName: "McFly", documentIdKey: DocumentKey(1), scannerLevel: ScannerLevel(7)));
     db.insert(Document(key: DocumentKey(1), code: "UZGOJ", ownerKey: MARTY, type: DocumentType.PERSONAL_ID, information: "Marty McFly", level: DocumentLevel.createValid()));
     db.insert(
         Document(key: DocumentKey(3), code: "USJBE", ownerKey: MARTY, type: DocumentType.VEHICLE_REGISTRATION, information: "Rocinante", level: DocumentLevel.createForgery(3)));
-    db.insert(
-        Document(key: DocumentKey(5), code: "XXEREYBE", ownerKey: MARTY, type: DocumentType.SECTOR_TRADE_LICENCE, level: DocumentLevel.createForgery(5)));
+    db.insert(Document(key: DocumentKey(5), code: "XXEREYBE", ownerKey: MARTY, type: DocumentType.SECTOR_TRADE_LICENCE, level: DocumentLevel.createForgery(5)));
     db.insert(Document(key: DocumentKey(4), code: "FFDES", ownerKey: MARTY, type: DocumentType.CAPTAINS_LICENCE, level: DocumentLevel.createForgery(3)));
     final PersonKey BIFF = PersonKey(2);
     db.insert(Account(key: AccountKey(2), loginName: "abcd", password: "1234", personKey: BIFF));
@@ -39,10 +39,11 @@ abstract class DataService {
   /// returns the AccountKey or null
   Future<AccountKey?> validateAccount(String userName, String password);
 
-  ScanResult scan(String data);
+  Future<ScanResult> resolveScannedCode(String data);
 }
 
 class DataServiceImpl extends DataService {
+
   @override
   bool isAvailable(String serverIpAddress) {
     // TODO: implement isAvailable
@@ -50,9 +51,22 @@ class DataServiceImpl extends DataService {
   }
 
   @override
-  ScanResult scan(String data) {
-    // TODO: implement scan
-    return ScanResult();
+  Future<ScanResult> resolveScannedCode(String data) async {
+    return getDb().getWhere(DocumentKey.dbTableKey, (conditions) => conditions.whereEquals(Document.COL_CODE, data)).then((documents) {
+      if (documents.isEmpty)
+        return ScanResult();
+      else {
+        final Document document = documents.first;
+        return getDb().getById(document.ownerKey).then((person) => person as Person).then((person) {
+          // TODO handle unknown person
+          return RecognizedScanResult(
+            personName: person.firstName + " " + person.lastName,
+            personIsWanted: person.isWanted,
+            document: document,
+          );
+        });
+      }
+    });
   }
 
   @override
@@ -72,17 +86,13 @@ class ScanResult {
 class RecognizedScanResult extends ScanResult {
   String? image;
   String personName;
-  DocumentType documentType;
-  String additionalInformation;
-  bool idIsValid;
-  bool personIsOk;
+  bool personIsWanted;
+  Document document;
 
   RecognizedScanResult({
     this.image,
     required this.personName,
-    required this.documentType,
-    required this.additionalInformation,
-    required this.idIsValid,
-    required this.personIsOk,
+    required this.personIsWanted,
+    required this.document,
   }) : super(idWasRecognized: true);
 }

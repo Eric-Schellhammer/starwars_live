@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get_it/get_it.dart';
 import 'package:starwars_live/documents/documents_list_screen.dart';
 import 'package:starwars_live/documents/id_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/scanner/scanner_result_screen.dart';
+import 'package:starwars_live/scanner/scanner_service.dart';
 import 'package:starwars_live/server/server_screen.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -46,7 +48,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     ),
                     StarWarsMenuButton(
                       child: Text("Scanner"),
-                      onPressed: () => Navigator.of(context).pushNamed(ScannerResultScreen.routeName),
+                      onPressed: GetIt.instance.get<ScannerService>().isScannerPresent() ? () => Navigator.of(context).pushNamed(ScannerResultScreen.routeName) : null,
                     ),
                     StarWarsMenuButton(
                       child: Text("Lizenzen"),

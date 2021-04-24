@@ -6,7 +6,7 @@ import 'package:starwars_live/initialize/application_config.dart';
 import 'package:starwars_live/initialize/login_screen.dart';
 import 'package:starwars_live/initialize/menu_screen.dart';
 import 'package:starwars_live/initialize/mode_screen.dart';
-import 'package:starwars_live/scanner/scan_screen.dart';
+import 'package:starwars_live/scanner/scanner_screen.dart';
 import 'package:starwars_live/scanner/scanner_result_screen.dart';
 import 'package:starwars_live/server/server_screen.dart';
 

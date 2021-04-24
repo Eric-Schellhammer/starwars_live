@@ -23,37 +23,33 @@ class DocumentScreenState extends State<DocumentScreen> {
       data: Theme.of(context).copyWith(textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 2.0)),
       child: Scaffold(
         body: StarWarsSwipeToDismissScreen(
-          child: _getCode(),
-        ),
-      ),
-    );
-  }
-
-  Widget _getCode() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            title: Center(child: Text(document.type.name)),
-            subtitle: document.information != null
-                ? Center(
-                    child: Text(
-                    document.information!,
-                    style: TextStyle(color: Colors.blue),
-                  ))
-                : null,
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: 40),
-            child: QrImage(
-              backgroundColor: Colors.white,
-              data: document.code,
-              version: QrVersions.auto,
-              size: 200.0,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Center(child: Text(document.type.name)),
+                  subtitle: document.information != null
+                      ? Center(
+                          child: Text(
+                          document.information!,
+                          style: TextStyle(color: Colors.blue),
+                        ))
+                      : null,
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 40),
+                  child: QrImage(
+                    backgroundColor: Colors.white,
+                    data: document.code,
+                    version: QrVersions.auto,
+                    size: 200.0,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

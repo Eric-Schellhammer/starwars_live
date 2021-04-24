@@ -19,7 +19,6 @@ class ScanScreen extends StatefulWidget {
 
 class _ScanScreenState extends State<ScanScreen> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  Barcode? result;
   QRViewController? controller;
   String errorMessage = "";
 
@@ -67,7 +66,7 @@ class _ScanScreenState extends State<ScanScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    (result != null)
+                    (errorMessage.isNotEmpty)
                         ? Text(
                             errorMessage,
                             style: TextStyle(
@@ -97,20 +96,17 @@ class _ScanScreenState extends State<ScanScreen> {
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        result = scanData;
-        if (result != null) {
-          final String format = describeEnum(result!.format);
-          if (format == "qrcode") {
-            _resolveScan(result!.code);
-          }
+      final Barcode? scannedCode = scanData;
+      if (scannedCode != null) {
+        final String format = describeEnum(scannedCode.format);
+        if (format == "qrcode") {
+          GetIt.instance.get<DataService>().resolveScannedCode(scannedCode.code).then((result) => _displayResult(result));
         }
-      });
+      }
     });
   }
 
-  void _resolveScan(String qrText) {
-    final ScanResult result = GetIt.instance.get<DataService>().scan(qrText);
+  void _displayResult(ScanResult result) {
     if (result.idWasRecognized) {
       controller?.pauseCamera();
       controller?.dispose();

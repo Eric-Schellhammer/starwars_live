@@ -26,7 +26,7 @@ class IdScreenState extends State<IdScreen> {
       final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT));
       final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
       db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) => db.getById((person as Person).documentIdKey).then((document) {
-            setState(() => this.document = document as Document);
+            setState(() => this.document = document as Document); // TODO handle unknown account, person, document
           })));
     });
     return Scaffold(body: Center(child: Text("Kontaktiere Server...")));

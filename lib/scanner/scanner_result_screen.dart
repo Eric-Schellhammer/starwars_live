@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
-import 'package:starwars_live/scanner/scan_screen.dart';
+import 'package:starwars_live/scanner/scanner_screen.dart';
+import 'package:starwars_live/scanner/scanner_service.dart';
 
 class ScannerResultScreen extends StatefulWidget {
   static const routeName = "/scanner_result_screen";
@@ -64,22 +66,22 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
     );
 
     children.add(
-      Text(recognizedResult.documentType.name),
+      Text(recognizedResult.document.type.name),
     );
 
-    if (recognizedResult.additionalInformation != null && recognizedResult.additionalInformation.isNotEmpty) {
+    if (recognizedResult.document.information != null && recognizedResult.document.information!.isNotEmpty) {
       children.add(
-        Text(recognizedResult.additionalInformation),
+        Text(recognizedResult.document.information!),
       ); // TODO make multiline
     }
 
     String idText;
     Color idColor;
-    if (recognizedResult.idIsValid) {
-      idText = "ID gültig";
+    if (GetIt.instance.get<ScannerService>().isDocumentValid(recognizedResult.document)) {
+      idText = "Dokument gültig";
       idColor = Colors.green;
     } else {
-      idText = "ID ungültig";
+      idText = "Dokument ungültig";
       idColor = Colors.red;
     }
     children.add(
@@ -89,7 +91,7 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
       ),
     );
 
-    if (!recognizedResult.personIsOk)
+    if (recognizedResult.personIsWanted)
       children.add(
         Padding(
           padding: EdgeInsets.only(top: 8),
