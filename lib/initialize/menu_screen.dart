@@ -43,23 +43,23 @@ class _MenuScreenState extends State<MenuScreen> {
                   mainAxisSpacing: 16,
                   children: [
                     StarWarsMenuButton(
-                      child: Text("ID"),
+                      child: FittedBox(child: Text("ID")),
                       onPressed: () => Navigator.of(context).pushNamed(IdScreen.routeName),
                     ),
                     StarWarsMenuButton(
-                      child: Text("Scanner"),
+                      child: FittedBox(child: Text("Scanner")),
                       onPressed: GetIt.instance.get<ScannerService>().isScannerPresent() ? () => Navigator.of(context).pushNamed(ScannerResultScreen.routeName) : null,
                     ),
                     StarWarsMenuButton(
-                      child: Text("Lizenzen"),
+                      child: FittedBox(child: Text("Lizenzen")),
                       onPressed: () => Navigator.of(context).pushNamed(DocumentsListScreen.routeName),
                     ),
                     StarWarsMenuButton(
-                      child: Text("Med Scan"),
+                      child: FittedBox(child: Text("Med Scan")),
                       onPressed: null,
                     ),
                     StarWarsMenuButton(
-                      child: Text("Bank"),
+                      child: FittedBox(child: Text("Bank")),
                       onPressed: null,
                     ),
                     StarWarsMenuButton(
@@ -83,7 +83,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       padding: EdgeInsets.all(8),
                       child: StarWarsMenuButton(
                         padding: EdgeInsets.all(16),
-                        child: Text("Server"),
+                        child: FittedBox(child: Text("Server")),
                         onPressed: () => Navigator.of(context).pushNamed(ServerScreen.routeName),
                       ),
                     ),
@@ -91,7 +91,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       padding: EdgeInsets.all(8),
                       child: StarWarsMenuButton(
                         padding: EdgeInsets.all(16),
-                        child: Text("Logout"),
+                        child: FittedBox(child: Text("Logout")),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),

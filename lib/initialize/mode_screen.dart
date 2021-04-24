@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
+import 'package:package_info/package_info.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/login_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
@@ -20,6 +21,13 @@ class _ModeScreenState extends State<ModeScreen> {
   Modes currentMode = Modes.LOCAL;
   String serverIpAddress = "";
   String errorMessage = "";
+  String? version;
+
+  @override
+  void initState() {
+    super.initState();
+    PackageInfo.fromPlatform().then((packageInfo) => setState(() => this.version = packageInfo.version));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +35,21 @@ class _ModeScreenState extends State<ModeScreen> {
       appBar: AppBar(
         title: Text("Star Wars Live"),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: _getChildren(),
-        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _getChildren(),
+              ),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [Text("Version " + (version ?? ""))],
+          ),
+        ],
       ),
     );
   }

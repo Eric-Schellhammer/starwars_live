@@ -1,6 +1,5 @@
 
 Synchronisieren auf LoginScreen und MenuScreen, als FAB, falls Modus "nur beim Sync"
 
-Skalieren der Texte im MenuScreen
 Change Password (ServerScreen)
 Password line sichtbar machen

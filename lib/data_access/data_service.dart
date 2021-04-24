@@ -22,7 +22,7 @@ abstract class DataService {
     // TODO remove this method
     final PersonKey MARTY = PersonKey(1);
     db.insert(Account(key: AccountKey(1), loginName: "abc", password: "123", personKey: MARTY));
-    db.insert(Person(key: MARTY, firstName: "Marty", lastName: "McFly", documentIdKey: DocumentKey(1), scannerLevel: ScannerLevel(7)));
+    db.insert(Person(key: MARTY, firstName: "Marty", lastName: "McFly", documentIdKey: DocumentKey(1), scannerLevel: ScannerLevel(4)));
     db.insert(Document(key: DocumentKey(1), code: "UZGOJ", ownerKey: MARTY, type: DocumentType.PERSONAL_ID, information: "Marty McFly", level: DocumentLevel.createValid()));
     db.insert(
         Document(key: DocumentKey(3), code: "USJBE", ownerKey: MARTY, type: DocumentType.VEHICLE_REGISTRATION, information: "Rocinante", level: DocumentLevel.createForgery(3)));

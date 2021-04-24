@@ -64,7 +64,7 @@ class ServerScreenState extends State<ServerScreen> {
     ].toList();
     documents!.forEach((document) {
       children.add(
-        TableRow(children: [Text(document.type.name), _getValidity(document.level)]),
+        TableRow(children: [FittedBox(child: Text(document.type.name)), _getValidity(document.level)]),
       );
     });
     return Center(
@@ -75,7 +75,7 @@ class ServerScreenState extends State<ServerScreen> {
   }
 
   Widget _getValidity(DocumentLevel level) {
-    return Text(level.isValid() ? "gültig" : "Fälschung Stufe " + level.level.toString());
+    return FittedBox(child: Text(level.isValid() ? "gültig" : "Fälschung Stufe " + level.level.toString()));
   }
 
   Widget _getMissing() {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
+import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/scanner/scanner_screen.dart';
 import 'package:starwars_live/scanner/scanner_service.dart';
 
@@ -58,26 +59,24 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
         padding: EdgeInsets.only(bottom: 16),
         child: Text(
           recognizedResult.personName,
-          style: TextStyle(
-            decoration: TextDecoration.underline,
-          ),
+          style: TextStyle(decoration: TextDecoration.underline),
         ),
       ),
     );
 
+    final Document recognizedDocument = recognizedResult.document;
     children.add(
-      Text(recognizedResult.document.type.name),
+      Text(recognizedDocument.type.name),
     );
-
-    if (recognizedResult.document.information != null && recognizedResult.document.information!.isNotEmpty) {
+    if (recognizedDocument.type != DocumentType.PERSONAL_ID && recognizedDocument.information != null && recognizedDocument.information!.isNotEmpty) {
       children.add(
-        Text(recognizedResult.document.information!),
+        Text(recognizedDocument.information!),
       ); // TODO make multiline
     }
 
     String idText;
     Color idColor;
-    if (GetIt.instance.get<ScannerService>().isDocumentValid(recognizedResult.document)) {
+    if (GetIt.instance.get<ScannerService>().isDocumentValid(recognizedDocument)) {
       idText = "Dokument gültig";
       idColor = Colors.green;
     } else {
@@ -86,7 +85,7 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
     }
     children.add(
       Padding(
-        padding: EdgeInsets.only(top: 8),
+        padding: EdgeInsets.only(top: 8, bottom: 8),
         child: _wrapInBar(idText, idColor),
       ),
     );
@@ -94,7 +93,7 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
     if (recognizedResult.personIsWanted)
       children.add(
         Padding(
-          padding: EdgeInsets.only(top: 8),
+          padding: EdgeInsets.only(bottom: 8),
           child: _wrapInBar("GESUCHT!", Colors.red),
         ),
       );
