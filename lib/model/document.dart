@@ -46,12 +46,14 @@ class Document extends DbEntry {
   static const String COL_CODE = "code";
   static const String COL_OWNER = "ownerKey";
   static const String COL_TYPE = "type";
+  static const String COL_INFO = "information";
   static const String COL_LEVEL = "level";
 
   DocumentKey key;
   String code;
   PersonKey ownerKey;
   DocumentType type;
+  String? information;
   DocumentLevel level;
 
   Document({
@@ -59,6 +61,7 @@ class Document extends DbEntry {
     required this.code,
     required this.ownerKey,
     required this.type,
+    this.information,
     required this.level,
   });
 
@@ -67,6 +70,7 @@ class Document extends DbEntry {
         code: data[COL_CODE],
         ownerKey: PersonKey(data[COL_OWNER]),
         type: DocumentType.fromKey(data[COL_TYPE]),
+        information: data[COL_INFO],
         level: DocumentLevel.createForgery(data[COL_LEVEL]),
       );
 
@@ -81,6 +85,7 @@ class Document extends DbEntry {
         COL_CODE: code,
         COL_OWNER: ownerKey.intKey,
         COL_TYPE: type.intKey,
+        COL_INFO: information,
         COL_LEVEL: level.level,
       };
 }
@@ -102,6 +107,7 @@ class DocumentTable extends DbTable<Document, DocumentKey> {
       Document.COL_CODE: "TEXT",
       Document.COL_OWNER: "INTEGER",
       Document.COL_TYPE: "INTEGER",
+      Document.COL_INFO: "TEXT",
       Document.COL_LEVEL: "INTEGER",
     };
   }

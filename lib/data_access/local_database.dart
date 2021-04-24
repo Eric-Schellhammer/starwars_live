@@ -15,7 +15,7 @@ class StarWarsDb {
     // TODO does this open a new connection on each call?
     WidgetsFlutterBinding.ensureInitialized();
     _ensureTablesMapIsFilled();
-    return getDatabasesPath().then((databasesPath) => openDatabase(join(databasesPath, 'starwars_live.db'), version: 9, onUpgrade: _createTables));
+    return getDatabasesPath().then((databasesPath) => openDatabase(join(databasesPath, 'starwars_live.db'), version: 10, onUpgrade: _createTables));
   }
 
   static void _ensureTablesMapIsFilled() {

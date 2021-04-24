@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/data_access/local_database.dart';
+import 'package:starwars_live/documents/document_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/model/account.dart';
 import 'package:starwars_live/model/document.dart';
@@ -55,27 +55,21 @@ class DocumentsListScreenState extends State<DocumentsListScreen> {
   Widget _getDocumentsList() {
     if (documents!.isEmpty) return Center(child: Text("Keine Dokumente vorhanden."));
     return ListView(
-      children: documents!
-          .map((document) => ListTile(
-                title: StarWarsMenuFrame(child: Text(document.type.name.toString())), // TODO display document details
-              ))
-          .toList(),
+      children: documents!.map((document) => _buildDocumentTile(document)).toList(),
     );
   }
 
-  Widget _getIdCode(String code) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text("Personal ID:"),
-          QrImage(
-            backgroundColor: Colors.white,
-            data: code,
-            version: QrVersions.auto,
-            size: 200.0,
-          ),
-        ],
+  Widget _buildDocumentTile(Document document) {
+    return StarWarsMenuFrame(
+      child: ListTile(
+        title: Text(document.type.name.toString()),
+        subtitle: document.information != null
+            ? Text(
+                document.information!,
+                style: TextStyle(color: Colors.blue),
+              )
+            : null,
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => DocumentScreen(document: document))),
       ),
     );
   }

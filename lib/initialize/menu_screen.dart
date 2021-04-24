@@ -53,7 +53,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       onPressed: () => Navigator.of(context).pushNamed(DocumentsListScreen.routeName),
                     ),
                     StarWarsMenuButton(
-                      child: Text(""),
+                      child: Text("Med Scan"),
                       onPressed: null,
                     ),
                     StarWarsMenuButton(

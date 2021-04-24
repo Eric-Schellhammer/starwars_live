@@ -18,7 +18,8 @@ class ServerScreen extends StatefulWidget {
 
 class ServerScreenState extends State<ServerScreen> {
   Person? person;
-  late DocumentLevel? idDocumentLevel;
+  DocumentLevel? idDocumentLevel;
+  List<Document>? documents;
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +29,11 @@ class ServerScreenState extends State<ServerScreen> {
         final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
         db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) {
               this.person = person as Person;
-              db.getById(person.documentIdKey).then((document) {
-                setState(() => idDocumentLevel = (document as Document).level);
+              db.getWhere(DocumentKey.dbTableKey, (conditions) => conditions.whereEquals(Document.COL_OWNER, person.key.intKey)).then((documents) {
+                setState(() {
+                  this.documents = documents.where((document) => document.type != DocumentType.PERSONAL_ID).toList(growable: false);
+                  idDocumentLevel = documents.where((document) => document.type == DocumentType.PERSONAL_ID).first.level;
+                });
               });
             }));
       });
@@ -52,16 +56,26 @@ class ServerScreenState extends State<ServerScreen> {
 
   Widget _getForPerson(Person person) {
     int scannerLevel = person.scannerLevel?.level ?? 0;
+    final List<TableRow> children = [
+      TableRow(children: [Text("Vorname"), Text(person.firstName)]),
+      TableRow(children: [Text("Nachname"), Text(person.lastName)]),
+      TableRow(children: [Text("ID Dokument"), _getValidity(idDocumentLevel!)]),
+      TableRow(children: [Text("Scanner"), Text(scannerLevel == 0 ? "N/A" : "Stufe " + scannerLevel.toString())]),
+    ].toList();
+    documents!.forEach((document) {
+      children.add(
+        TableRow(children: [Text(document.type.name), _getValidity(document.level)]),
+      );
+    });
     return Center(
       child: Table(
-        children: [
-          TableRow(children: [Text("Vorname"), Text(person.firstName)]),
-          TableRow(children: [Text("Nachname"), Text(person.lastName)]),
-          TableRow(children: [Text("ID Dokument"), Text(idDocumentLevel!.isValid() ? "gültig" : "Fälschung Stufe " + idDocumentLevel!.level.toString())]),
-          TableRow(children: [Text("Scanner"), Text(scannerLevel == 0 ? "N/A" : "Stufe " + scannerLevel.toString())]),
-        ], // TODO change password button
+        children: children, // TODO change password button
       ),
     );
+  }
+
+  Widget _getValidity(DocumentLevel level) {
+    return Text(level.isValid() ? "gültig" : "Fälschung Stufe " + level.level.toString());
   }
 
   Widget _getMissing() {
