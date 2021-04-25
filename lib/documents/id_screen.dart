@@ -16,19 +16,38 @@ class IdScreen extends StatefulWidget {
 }
 
 class IdScreenState extends State<IdScreen> {
-  Document? document;
+  late Future<Document> futureDocument;
+
+  @override
+  void initState() {
+    super.initState();
+    futureDocument = SharedPreferences.getInstance().then((preferences) {
+      final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT));
+      final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
+      return db
+          .getById(accountKey)
+          .then((account) => db.getById((account as Account).personKey))
+          .then((person) => db.getById((person as Person).documentIdKey))
+          .then((document) => document as Document);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (document != null) return DocumentScreen(document: document!);
-
-    SharedPreferences.getInstance().then((preferences) {
-      final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT));
-      final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
-      db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) => db.getById((person as Person).documentIdKey).then((document) {
-            setState(() => this.document = document as Document); // TODO handle unknown account, person, document
-          })));
-    });
-    return Scaffold(body: Center(child: Text("Kontaktiere Server...")));
+    return Scaffold(
+      body: Center(
+        child: FutureBuilder<Document>(
+          future: futureDocument,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return DocumentScreen(document: snapshot.data!);
+            } else if (snapshot.hasError) {
+              return Text("Fehler beim Laden des Dokuments.");
+            }
+            return Text("Kontaktiere Server...");
+          },
+        ),
+      ),
+    );
   }
 }

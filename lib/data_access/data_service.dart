@@ -36,8 +36,8 @@ abstract class DataService {
 
   bool isAvailable(String serverIpAddress);
 
-  /// returns the AccountKey or null
-  Future<AccountKey?> validateAccount(String userName, String password);
+  /// returns the Account or null
+  Future<Account?> validateAccount(String userName, String password);
 
   Future<ScanResult> resolveScannedCode(String data);
 }
@@ -70,10 +70,10 @@ class DataServiceImpl extends DataService {
   }
 
   @override
-  Future<AccountKey?> validateAccount(String userName, String password) async {
+  Future<Account?> validateAccount(String userName, String password) async {
     final matches =
         await getDb().getWhere(AccountKey.dbTableKey, (conditions) => conditions.whereEquals(Account.COL_LOGIN_NAME, userName).whereEquals(Account.COL_PASSWORD, password));
-    return matches.isEmpty ? null : matches.first.key;
+    return matches.isEmpty ? null : matches.first;
   }
 }
 

@@ -7,7 +7,6 @@ import 'package:starwars_live/data_access/local_database.dart';
 import 'package:starwars_live/initialize/menu_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/main.dart';
-import 'package:starwars_live/model/account.dart';
 import 'package:starwars_live/model/person.dart';
 import 'package:starwars_live/scanner/scanner_service.dart';
 
@@ -94,13 +93,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _checkLogin() {
-    GetIt.instance.get<DataService>().validateAccount(userName, password).then((accountKey) {
-      if (accountKey != null) {
-        SharedPreferences.getInstance().then((preferences) => preferences.setInt(LOGGED_IN_ACCOUNT, accountKey.intKey));
+    GetIt.instance.get<DataService>().validateAccount(userName, password).then((account) {
+      if (account != null) {
+        SharedPreferences.getInstance().then((preferences) => preferences.setInt(LOGGED_IN_ACCOUNT, account.getKey().intKey));
         final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
         db
-            .getById(accountKey)
-            .then((account) => db.getById((account as Account).personKey))
+            .getById(account.personKey)
             .then((person) => GetIt.instance.get<ScannerService>().setScanner((person as Person).scannerLevel))
             .then((__) => Navigator.of(context).pushNamed(MenuScreen.routeName, arguments: userName));
       } else {
