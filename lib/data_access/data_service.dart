@@ -46,7 +46,7 @@ class DataServiceImpl extends DataService {
 
   @override
   bool isAvailable(String serverIpAddress) {
-    // TODO: implement isAvailable
+    // TODO: implement isAvailable: forward to SyncService
     return false;
   }
 

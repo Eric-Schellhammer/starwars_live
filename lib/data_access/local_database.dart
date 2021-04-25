@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -6,16 +8,16 @@ import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';
 
 class StarWarsDb {
+  static const int _version = 11;
   static final List<DbTable> _tables = [AccountTable(), PersonTable(), DocumentTable()];
 
   static Map<DbTableKey, DbTable>? _tablesByKey;
   final Future<Database> _database = _createDatabase();
 
   static Future<Database> _createDatabase() async {
-    // TODO does this open a new connection on each call?
     WidgetsFlutterBinding.ensureInitialized();
     _ensureTablesMapIsFilled();
-    return getDatabasesPath().then((databasesPath) => openDatabase(join(databasesPath, 'starwars_live.db'), version: 11, onUpgrade: _createTables));
+    return getDatabasesPath().then((databasesPath) => openDatabase(join(databasesPath, 'starwars_live.db'), version: _version, onUpgrade: _createTables));
   }
 
   static void _ensureTablesMapIsFilled() {
@@ -55,6 +57,10 @@ class StarWarsDb {
   Future<void> closeDatabase() async {
     final Database db = await _database;
     await db.close();
+  }
+
+  Future<String> getExport() {
+    return _database.then((db) => _DbExporter(db).getExport());
   }
 }
 
@@ -162,5 +168,26 @@ class ConditionBuilder {
     where += columnName + " =?";
     whereArgs.add(value);
     return this;
+  }
+}
+
+class _DbExporter {
+  static const String HEAD_FORMAT_VERSION = "format version";
+  static const String HEAD_CONTENT_VERSION = "content version";
+
+  final Database db;
+
+  _DbExporter(this.db);
+
+  Future<String> getExport() async {
+    final Map<String, dynamic> root = Map();
+    root[HEAD_FORMAT_VERSION] = StarWarsDb._version.toString();
+    root[HEAD_CONTENT_VERSION] = "0";
+    await Future.wait(StarWarsDb._tables.map((table) => _getTableContent(table).then((content) => root[table.getDbTableKey().getTableName()] = content)));
+    return jsonEncode(root);
+  }
+
+  Future<List<Map<String, dynamic>>> _getTableContent(DbTable table) {
+    return db.query(table.getDbTableKey().getTableName(), columns: table._getAllColumnNames());
   }
 }
