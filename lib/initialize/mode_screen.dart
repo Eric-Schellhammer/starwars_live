@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:package_info/package_info.dart';
-import 'package:starwars_live/data_access/data_service.dart';
+import 'package:starwars_live/data_access/online_database.dart';
 import 'package:starwars_live/initialize/login_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
+import 'package:starwars_live/model/document.dart';
 
-enum Modes { LIVE, COPY, LOCAL }
+enum Modes { LIVE, COPY }
 
 class ModeScreen extends StatefulWidget {
   ModeScreen({Key? key}) : super(key: key);
@@ -18,8 +19,8 @@ class ModeScreen extends StatefulWidget {
 }
 
 class _ModeScreenState extends State<ModeScreen> {
-  Modes currentMode = Modes.LOCAL;
-  String serverIpAddress = "";
+  Modes currentMode = Modes.COPY;
+  final TextEditingController serverIpAddressController = TextEditingController();
   String errorMessage = "";
   String? version;
 
@@ -27,6 +28,8 @@ class _ModeScreenState extends State<ModeScreen> {
   void initState() {
     super.initState();
     PackageInfo.fromPlatform().then((packageInfo) => setState(() => this.version = packageInfo.version));
+    DocumentType.ensureLoaded();
+    serverIpAddressController.text = "devilturm.synology.me";
   }
 
   @override
@@ -72,35 +75,31 @@ class _ModeScreenState extends State<ModeScreen> {
         onChanged: (Modes? newMode) {
           setState(() {
             errorMessage = "";
-            currentMode = newMode ?? Modes.LOCAL;
+            currentMode = newMode ?? Modes.COPY;
           });
         }));
-    if (currentMode != Modes.LOCAL) {
-      children.add(Padding(
-        padding: EdgeInsets.only(top: 16),
-        child: Text(
-          "IP-Adresse des Servers:",
-          style: TextStyle(fontSize: 20),
-        ),
-      ));
-      children.add(Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Flexible(flex: 1, child: Text("")),
-          Flexible(
-              flex: 2,
-              child: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    serverIpAddress = value;
-                    errorMessage = "";
-                  });
-                },
-              )),
-          Flexible(flex: 1, child: Text("")),
-        ],
-      ));
-    }
+    children.add(Padding(
+      padding: EdgeInsets.only(top: 16),
+      child: Text(
+        "IP-Adresse des Servers:",
+        style: TextStyle(fontSize: 20),
+      ),
+    ));
+    children.add(Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Flexible(flex: 1, child: Text("")),
+        Flexible(
+            flex: 2,
+            child: TextField(
+              controller: serverIpAddressController,
+              onChanged: (value) {
+                setState(() => errorMessage = "");
+              },
+            )),
+        Flexible(flex: 1, child: Text("")),
+      ],
+    ));
     if (errorMessage.isNotEmpty)
       children.add(Text(
         errorMessage,
@@ -108,20 +107,16 @@ class _ModeScreenState extends State<ModeScreen> {
       ));
     children.add(StarWarsButton(
       child: Text("OK"),
-      onPressed: () {
-        if (currentMode == Modes.LOCAL) {
+      onPressed: () async {
+        final syncService = GetIt.instance.get<SyncService>();
+        syncService.setUrl(serverIpAddressController.text, "DB1");
+        if (await syncService.loadIfAvailable().onError((error, stackTrace) => false)) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => LoginScreen()),
           );
         } else {
-          if (GetIt.instance.get<DataService>().isAvailable(serverIpAddress)) {
-            // currently, all values are rejected
-          } else {
-            setState(() {
-              errorMessage = "Server nicht erreichbar";
-            });
-          }
+          setState(() => errorMessage = "Server nicht erreichbar");
         }
       },
     ));
@@ -134,8 +129,6 @@ class _ModeScreenState extends State<ModeScreen> {
         return "jederzeit";
       case Modes.COPY:
         return "nur beim Synchronisieren";
-      case Modes.LOCAL:
-        return "ohne Server (Debug-Feature)";
       default:
         return "<unknown>";
     }

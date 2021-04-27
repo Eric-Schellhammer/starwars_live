@@ -62,6 +62,10 @@ class StarWarsDb {
   Future<String> getExport() {
     return _database.then((db) => _DbExporter(db).getExport());
   }
+
+  Future<void> setImport(String jsonString) {
+    return _database.then((db) => _DbImporter(db).setImport(jsonString));
+  }
 }
 
 class DbTableKey<DB_ENTRY extends DbEntry> {
@@ -174,6 +178,7 @@ class ConditionBuilder {
 class _DbExporter {
   static const String HEAD_FORMAT_VERSION = "format version";
   static const String HEAD_CONTENT_VERSION = "content version";
+  static const String TABLES = "tables";
 
   final Database db;
 
@@ -183,11 +188,33 @@ class _DbExporter {
     final Map<String, dynamic> root = Map();
     root[HEAD_FORMAT_VERSION] = StarWarsDb._version.toString();
     root[HEAD_CONTENT_VERSION] = "0";
-    await Future.wait(StarWarsDb._tables.map((table) => _getTableContent(table).then((content) => root[table.getDbTableKey().getTableName()] = content)));
+    final Map<String, dynamic> tables = Map();
+    root[TABLES] = tables;
+    await Future.wait(StarWarsDb._tables.map((table) => _getTableContent(table).then((content) => tables[table.getDbTableKey().getTableName()] = content)));
     return jsonEncode(root);
   }
 
   Future<List<Map<String, dynamic>>> _getTableContent(DbTable table) {
     return db.query(table.getDbTableKey().getTableName(), columns: table._getAllColumnNames());
+  }
+}
+
+class _DbImporter {
+  final Database db;
+
+  _DbImporter(this.db);
+
+  Future<void> setImport(String jsonString) async {
+    final root = jsonDecode(jsonString);
+    if (root[_DbExporter.HEAD_FORMAT_VERSION] != StarWarsDb._version.toString())
+      throw Exception("Cannot update DB version yet (current: " + StarWarsDb._version.toString() + " read: " + root[_DbExporter.HEAD_FORMAT_VERSION]);
+    // note: CONTENT_VERSION not yet checked
+
+    final Map<String, dynamic> tables = root[_DbExporter.TABLES];
+    final List<Future> futures = List.empty(growable: true);
+    tables.forEach((tableName, entriesList) {
+      futures.add(db.execute("DELETE FROM " + tableName).then((__) => Future.wait((entriesList as List).map((entry) => db.insert(tableName, entry)))));
+    });
+    return Future.wait(futures).then((value) => null);
   }
 }

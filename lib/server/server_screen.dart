@@ -3,11 +3,13 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/data_access/local_database.dart';
+import 'package:starwars_live/data_access/online_database.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/model/account.dart';
 import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';
 import 'package:starwars_live/model/validation.dart';
+import 'package:starwars_live/scanner/scanner_service.dart';
 
 class ServerScreen extends StatefulWidget {
   static const routeName = "/server_screen";
@@ -24,7 +26,12 @@ class ServerScreenState extends State<ServerScreen> {
   @override
   void initState() {
     super.initState();
+    _initFuture();
+  }
+
+  void _initFuture() {
     futureIdDocumentLevel = SharedPreferences.getInstance().then((preferences) async {
+      //final ex = await GetIt.instance.get<DataService>().getDb().getExport();
       final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT));
       final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
       return db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) {
@@ -52,6 +59,19 @@ class ServerScreenState extends State<ServerScreen> {
                   else if (snapshot.hasError) return _getMissing();
                   return Text("Kontaktiere Server...");
                 }),
+          ),
+          floatingActionButton: FloatingActionButton(
+            child: FittedBox(child: Text("SYNC")),
+            onPressed: () async {
+              await GetIt.instance.get<SyncService>().fetchDatabase();
+              final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
+              await SharedPreferences.getInstance().then((preferences) => preferences.getInt(LOGGED_IN_ACCOUNT)).then((accountId) => db
+                  .getById(AccountKey(accountId))
+                  .then((account) => db.getById((account as Account).personKey))
+                  .then((person) => GetIt.instance.get<ScannerService>().setScanner((person as Person).scannerLevel)));
+              _initFuture();
+              setState(() {}); // reload page
+            },
           ),
         ));
   }

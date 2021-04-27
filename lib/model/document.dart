@@ -2,7 +2,7 @@ import 'package:starwars_live/data_access/local_database.dart';
 import 'package:starwars_live/model/person.dart';
 import 'package:starwars_live/model/validation.dart';
 
-/// This is an in-game character, i.e. SC or NSC
+/// this is a Document owned by a Person
 
 class DocumentType {
   static final Map<int, DocumentType> _typeByKey = Map();
@@ -29,6 +29,10 @@ class DocumentType {
   static final WEAPON_LICENCE = DocumentType._(4, "Waffenlizenz");
   static final SECTOR_TRADE_LICENCE = DocumentType._(5, "Sektor-Handelslizenz");
   static final UNKNOWN = DocumentType._(0, "unbekanntes Dokument");
+
+  static List<DocumentType> ensureLoaded() {
+    return [PERSONAL_ID, CAPTAINS_LICENCE, VEHICLE_REGISTRATION, WEAPON_LICENCE, SECTOR_TRADE_LICENCE, UNKNOWN];
+  }
 }
 
 class DocumentKey extends DbEntryKey {

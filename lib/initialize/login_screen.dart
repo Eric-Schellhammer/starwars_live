@@ -44,6 +44,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   flex: 2,
                   child: TextField(
                     cursorColor: MAIN_COLOR,
+                    decoration: InputDecoration(
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: MAIN_COLOR_INACTIVE)),
+                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: MAIN_COLOR)),
+                    ),
                     autofocus: true,
                     onChanged: (value) {
                       setState(() {
@@ -66,6 +70,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   flex: 2,
                   child: TextField(
                     cursorColor: MAIN_COLOR,
+                    decoration: InputDecoration(
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: MAIN_COLOR_INACTIVE)),
+                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: MAIN_COLOR)),
+                    ),
                     onChanged: (value) {
                       setState(() {
                         errorMessage = "";

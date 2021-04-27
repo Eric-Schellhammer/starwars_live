@@ -1,5 +1,2 @@
 
-Synchronisieren auf LoginScreen und MenuScreen, als FAB, falls Modus "nur beim Sync"
-
 Change Password (ServerScreen)
-Password line sichtbar machen

@@ -1,4 +1,6 @@
+import 'package:get_it/get_it.dart';
 import 'package:starwars_live/data_access/local_database.dart';
+import 'package:starwars_live/data_access/online_database.dart';
 import 'package:starwars_live/model/account.dart';
 import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';
@@ -11,7 +13,7 @@ abstract class DataService {
 
   DataService() {
     starWarsDb = StarWarsDb();
-    _loadDefaultDb(starWarsDb);
+    //_loadDefaultDb(starWarsDb);
   }
 
   StarWarsDb getDb() {
@@ -34,8 +36,6 @@ abstract class DataService {
     db.insert(Document(key: DocumentKey(2), code: "UZGOJX", ownerKey: BIFF, type: DocumentType.PERSONAL_ID, information: "Biff Tannen", level: DocumentLevel.createForgery(3)));
   }
 
-  bool isAvailable(String serverIpAddress);
-
   /// returns the Account or null
   Future<Account?> validateAccount(String userName, String password);
 
@@ -43,13 +43,6 @@ abstract class DataService {
 }
 
 class DataServiceImpl extends DataService {
-
-  @override
-  bool isAvailable(String serverIpAddress) {
-    // TODO: implement isAvailable: forward to SyncService
-    return false;
-  }
-
   @override
   Future<ScanResult> resolveScannedCode(String data) async {
     return getDb().getWhere(DocumentKey.dbTableKey, (conditions) => conditions.whereEquals(Document.COL_CODE, data)).then((documents) {
