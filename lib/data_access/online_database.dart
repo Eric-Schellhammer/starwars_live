@@ -1,5 +1,3 @@
-
-
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:starwars_live/data_access/data_service.dart';

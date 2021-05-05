@@ -1,6 +1,4 @@
-import 'package:get_it/get_it.dart';
 import 'package:starwars_live/data_access/local_database.dart';
-import 'package:starwars_live/data_access/online_database.dart';
 import 'package:starwars_live/model/account.dart';
 import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';

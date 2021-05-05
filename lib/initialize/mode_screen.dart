@@ -22,7 +22,9 @@ class _ModeScreenState extends State<ModeScreen> {
   Modes currentMode = Modes.COPY;
   final TextEditingController serverIpAddressController = TextEditingController();
   String errorMessage = "";
+  String errorDescription = "";
   String? version;
+  bool waiting = false;
 
   @override
   void initState() {
@@ -38,22 +40,24 @@ class _ModeScreenState extends State<ModeScreen> {
       appBar: AppBar(
         title: Text("Star Wars Live"),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: _getChildren(),
-              ),
+      body: waiting && errorMessage.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: _getChildren(),
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [Text("Version " + (version ?? ""))],
+                ),
+              ],
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [Text("Version " + (version ?? ""))],
-          ),
-        ],
-      ),
     );
   }
 
@@ -75,6 +79,8 @@ class _ModeScreenState extends State<ModeScreen> {
         onChanged: (Modes? newMode) {
           setState(() {
             errorMessage = "";
+            errorDescription = "";
+            waiting = false;
             currentMode = newMode ?? Modes.COPY;
           });
         }));
@@ -94,31 +100,48 @@ class _ModeScreenState extends State<ModeScreen> {
             child: TextField(
               controller: serverIpAddressController,
               onChanged: (value) {
-                setState(() => errorMessage = "");
+                setState(() {
+                  errorMessage = "";
+                  errorDescription = "";
+                  waiting = false;
+                });
               },
             )),
         Flexible(flex: 1, child: Text("")),
       ],
     ));
-    if (errorMessage.isNotEmpty)
+    if (errorMessage.isNotEmpty) {
       children.add(Text(
         errorMessage,
-        style: TextStyle(color: Colors.red),
+        style: TextStyle(color: Colors.red, fontSize: 20),
       ));
+      children.add(Text(
+        errorDescription,
+        style: TextStyle(color: Colors.indigo),
+      ));
+    }
     children.add(StarWarsButton(
       child: Text("OK"),
-      onPressed: () async {
-        final syncService = GetIt.instance.get<SyncService>();
-        syncService.setUrl(serverIpAddressController.text, "DB1");
-        if (await syncService.loadIfAvailable().onError((error, stackTrace) => false)) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => LoginScreen()),
-          );
-        } else {
-          setState(() => errorMessage = "Server nicht erreichbar");
-        }
-      },
+      onPressed: waiting
+          ? null
+          : () async {
+              setState(() => waiting = true);
+              final syncService = GetIt.instance.get<SyncService>();
+              syncService.setUrl(serverIpAddressController.text, "DB1");
+              final String error = await syncService.loadIfAvailable().then((success) => "").onError((error, stackTrace) => error.toString());
+              if (error.isEmpty) {
+                setState(() => waiting = false);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                );
+              } else {
+                setState(() {
+                  errorMessage = "Server nicht erreichbar";
+                  errorDescription = "(" + error + ")";
+                });
+              }
+            },
     ));
     return children;
   }
