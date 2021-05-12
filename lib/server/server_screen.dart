@@ -32,7 +32,7 @@ class ServerScreenState extends State<ServerScreen> {
   void _initFuture() {
     futureIdDocumentLevel = SharedPreferences.getInstance().then((preferences) async {
       //final ex = await GetIt.instance.get<DataService>().getDb().getExport();
-      final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT));
+      final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT)!); // TODO handle missing account
       final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
       return db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) {
             this.person = person as Person;
@@ -66,7 +66,7 @@ class ServerScreenState extends State<ServerScreen> {
               await GetIt.instance.get<SyncService>().fetchDatabase();
               final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
               await SharedPreferences.getInstance().then((preferences) => preferences.getInt(LOGGED_IN_ACCOUNT)).then((accountId) => db
-                  .getById(AccountKey(accountId))
+                  .getById(AccountKey(accountId!)) // TODO handle missing account
                   .then((account) => db.getById((account as Account).personKey))
                   .then((person) => GetIt.instance.get<ScannerService>().setScanner((person as Person).scannerLevel)));
               _initFuture();

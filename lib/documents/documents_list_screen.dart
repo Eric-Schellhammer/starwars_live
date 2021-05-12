@@ -24,7 +24,7 @@ class DocumentsListScreenState extends State<DocumentsListScreen> {
   Widget build(BuildContext context) {
     if (!_loaded()) {
       SharedPreferences.getInstance().then((preferences) {
-        final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT));
+        final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT)!); // TODO handle missing account
         final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
         db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) => (person as Person).getKey().intKey).then((personKey) => db
                 .getWhere(DocumentKey.dbTableKey,

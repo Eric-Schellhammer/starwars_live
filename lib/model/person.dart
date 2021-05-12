@@ -20,6 +20,7 @@ class Person extends DbEntry {
   static const String COL_LAST_NAME = "last_name";
   static const String COL_SCANNER_LEVEL = "scanner_level";
   static const String COL_DOCUMENT_ID_KEY = "document_id";
+  static const String COL_CREDITS = "credits";
   static const String COL_WANTED = "wanted";
 
   PersonKey key;
@@ -27,6 +28,7 @@ class Person extends DbEntry {
   String lastName;
   ScannerLevel? scannerLevel;
   DocumentKey documentIdKey;
+  int credits;
   bool isWanted;
 
   Person({
@@ -35,6 +37,7 @@ class Person extends DbEntry {
     required this.lastName,
     this.scannerLevel,
     required this.documentIdKey,
+    this.credits = 0,
     this.isWanted = false,
   });
 
@@ -44,6 +47,7 @@ class Person extends DbEntry {
         lastName: data[COL_LAST_NAME],
         scannerLevel: ScannerLevel(data[COL_SCANNER_LEVEL]),
         documentIdKey: DocumentKey(data[COL_DOCUMENT_ID_KEY]),
+        credits: data[COL_CREDITS] ?? 0,
         isWanted: data[COL_WANTED] != 0,
       );
 
@@ -59,6 +63,7 @@ class Person extends DbEntry {
         COL_LAST_NAME: lastName,
         COL_SCANNER_LEVEL: scannerLevel?.level ?? 0,
         COL_DOCUMENT_ID_KEY: documentIdKey.intKey,
+        COL_CREDITS: credits,
         COL_WANTED: isWanted ? 1 : 0,
       };
 }
@@ -81,6 +86,7 @@ class PersonTable extends DbTable<Person, PersonKey> {
       Person.COL_LAST_NAME: "TEXT",
       Person.COL_SCANNER_LEVEL: "INTEGER",
       Person.COL_DOCUMENT_ID_KEY: "INTEGER",
+      Person.COL_CREDITS: "INTEGER",
       Person.COL_WANTED: "INTEGER",
     };
   }

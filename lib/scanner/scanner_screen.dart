@@ -36,60 +36,44 @@ class _ScanScreenState extends State<ScanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            flex: 5,
-            // To ensure the Scanner view is properly sizes after rotation
-            // we need to listen for Flutter SizeChanged notification and update controller
-            child: StarWarsMenuFrame(
-              child: NotificationListener<SizeChangedLayoutNotification>(
-                onNotification: (notification) {
-                  Future.microtask(() => controller?.updateDimensions(qrKey));
-                  return false;
-                },
-                child: SizeChangedLayoutNotifier(
-                  key: const Key('qr-size-notifier'),
-                  child: QRView(
-                    key: qrKey,
-                    onQRViewCreated: _onQRViewCreated,
-                  ),
-                ),
-              ),
-            ),
+    return StarWarsMasterDetailScreen(
+      masterChild: NotificationListener<SizeChangedLayoutNotification>(
+        onNotification: (notification) {
+          Future.microtask(() => controller?.updateDimensions(qrKey));
+          return false;
+        },
+        child: SizeChangedLayoutNotifier(
+          key: const Key('qr-size-notifier'),
+          child: QRView(
+            key: qrKey,
+            onQRViewCreated: _onQRViewCreated,
           ),
-          Expanded(
-            flex: 1,
-            child: StarWarsMenuFrame(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    (errorMessage.isNotEmpty)
-                        ? Text(
-                            errorMessage,
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 20,
-                            ),
-                          )
-                        : Text(
-                            'Führe Scan durch',
-                            style: TextStyle(fontSize: 20),
-                          ),
-                    StarWarsButton(
-                        child: Text("Abbrechen"),
-                        onPressed: () {
-                          Navigator.of(context).pushReplacementNamed(ScannerResultScreen.routeName);
-                        })
-                  ],
-                ),
-              ),
-            ),
-          )
-        ],
+        ),
       ),
+      detailChildren: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            (errorMessage.isNotEmpty)
+                ? Text(
+                    errorMessage,
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 20,
+                    ),
+                  )
+                : Text(
+                    'Führe Scan durch',
+                    style: TextStyle(fontSize: 20),
+                  ),
+            StarWarsButton(
+                child: Text("Abbrechen"),
+                onPressed: () {
+                  Navigator.of(context).pushReplacementNamed(ScannerResultScreen.routeName);
+                })
+          ],
+        ),
+      ],
     );
   }
 

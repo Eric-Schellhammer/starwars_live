@@ -1,5 +1,6 @@
 
-make remote data accessible
+read remote data version
+synchronize only when needed
 
 Change Password (ServerScreen)
 

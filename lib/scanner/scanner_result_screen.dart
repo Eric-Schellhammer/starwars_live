@@ -22,26 +22,15 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
   @override
   Widget build(BuildContext context) {
     result = ModalRoute.of(context)?.settings.arguments as ScanResult;
-    return Scaffold(
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            flex: 5,
-            child: StarWarsMenuFrame(child: _displayScanResult()),
-          ),
-          Expanded(
-            flex: 1,
-            child: StarWarsMenuFrame(
-              child: Center(
-                child: StarWarsButton(
-                  child: Text("Starte Scan"),
-                  onPressed: () => Navigator.of(context).pushReplacementNamed(ScanScreen.routeName),
-                ),
-              ),
-            ),
-          )
-        ],
-      ),
+    return StarWarsMasterDetailScreen(
+      masterChild: _displayScanResult(),
+      detailTextFactor: 2.0,
+      detailChildren: [
+        StarWarsTextButton(
+          text: "Starte Scan",
+          onPressed: () => Navigator.of(context).pushReplacementNamed(ScanScreen.routeName),
+        ),
+      ],
     );
   }
 

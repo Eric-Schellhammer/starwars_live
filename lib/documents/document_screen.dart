@@ -19,8 +19,7 @@ class DocumentScreenState extends State<DocumentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: Theme.of(context).copyWith(textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 2.0)),
+    return DoubleTextSizeTheme(
       child: Scaffold(
         body: StarWarsSwipeToDismissScreen(
           child: Center(
@@ -50,6 +49,44 @@ class DocumentScreenState extends State<DocumentScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class QrScreenContents extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final String code;
+
+  const QrScreenContents({Key? key, required this.title, this.subtitle, required this.code}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            title: Center(child: FittedBox(child: Text(title))),
+            subtitle: subtitle != null
+                ? Center(
+                    child: Text(
+                    subtitle!,
+                    style: TextStyle(color: Colors.blue),
+                  ))
+                : null,
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 40),
+            child: QrImage(
+              backgroundColor: Colors.white,
+              data: code,
+              version: QrVersions.auto,
+              size: 200.0,
+            ),
+          ),
+        ],
       ),
     );
   }

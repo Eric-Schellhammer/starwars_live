@@ -8,7 +8,7 @@ import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';
 
 class StarWarsDb {
-  static const int _version = 11;
+  static const int _version = 12;
   static final List<DbTable> _tables = [AccountTable(), PersonTable(), DocumentTable()];
 
   static Map<DbTableKey, DbTable>? _tablesByKey;
@@ -206,8 +206,8 @@ class _DbImporter {
 
   Future<void> setImport(String jsonString) async {
     final root = jsonDecode(jsonString);
-    if (root[_DbExporter.HEAD_FORMAT_VERSION] != StarWarsDb._version.toString())
-      throw Exception("Cannot update DB version yet (current: " + StarWarsDb._version.toString() + " read: " + root[_DbExporter.HEAD_FORMAT_VERSION]);
+    //if (root[_DbExporter.HEAD_FORMAT_VERSION] != StarWarsDb._version.toString())
+    //  throw Exception("Cannot update DB version yet (current: " + StarWarsDb._version.toString() + " read: " + root[_DbExporter.HEAD_FORMAT_VERSION]);
     // note: CONTENT_VERSION not yet checked
 
     final Map<String, dynamic> tables = root[_DbExporter.TABLES];

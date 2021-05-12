@@ -22,7 +22,7 @@ class IdScreenState extends State<IdScreen> {
   void initState() {
     super.initState();
     futureDocument = SharedPreferences.getInstance().then((preferences) {
-      final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT));
+      final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT)!); // TODO handle missing account
       final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
       return db
           .getById(accountKey)

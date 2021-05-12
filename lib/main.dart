@@ -1,6 +1,7 @@
 // @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:starwars_live/banking/banking_screen.dart';
 import 'package:starwars_live/documents/documents_list_screen.dart';
 import 'package:starwars_live/documents/id_screen.dart';
 import 'package:starwars_live/initialize/application_config.dart';
@@ -33,6 +34,7 @@ class StarWarsLive extends StatelessWidget {
         MenuScreen.routeName: (ctx) => MenuScreen(),
         IdScreen.routeName: (ctx) => IdScreen(),
         DocumentsListScreen.routeName: (ctx) => DocumentsListScreen(),
+        BankingScreen.routeName: (ctx) => BankingScreen(),
         ScanScreen.routeName: (ctx) => ScanScreen(),
         ScannerResultScreen.routeName: (ctx) => ScannerResultScreen(),
         ServerScreen.routeName: (ctx) => ServerScreen(),
