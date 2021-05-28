@@ -8,16 +8,37 @@ import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/scanner/scanner_result_screen.dart';
 
-class ScanScreen extends StatefulWidget {
+class ScanScreen extends ScannerScreen {
   static const routeName = "/scan_screen";
 
-  ScanScreen({Key? key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => _ScanScreenState();
+  ScanScreen({Key? key})
+      : super(
+          handleScannedCode: (code) => GetIt.instance.get<DataService>().resolveScannedDocumentCode(code),
+          handleSuccessfulScan: (context, result) => Navigator.of(context).pushReplacementNamed(ScannerResultScreen.routeName, arguments: result),
+          onCancel: (context) => Navigator.of(context).pushReplacementNamed(ScannerResultScreen.routeName),
+          scanPrompt: "Führe Scan durch",
+        );
 }
 
-class _ScanScreenState extends State<ScanScreen> {
+class ScannerScreen extends StatefulWidget {
+  final Future<ScanResult> Function(String) handleScannedCode;
+  final void Function(BuildContext, ScanSuccess) handleSuccessfulScan;
+  final void Function(BuildContext) onCancel;
+  final String scanPrompt;
+
+  const ScannerScreen({
+    Key? key,
+    required this.handleScannedCode,
+    required this.handleSuccessfulScan,
+    required this.onCancel,
+    this.scanPrompt = "Führe Scan durch",
+  }) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _ScannerScreenState();
+}
+
+class _ScannerScreenState extends State<ScannerScreen> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
   String errorMessage = "";
@@ -57,20 +78,16 @@ class _ScanScreenState extends State<ScanScreen> {
             (errorMessage.isNotEmpty)
                 ? Text(
                     errorMessage,
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 20,
-                    ),
+                    style: TextStyle(color: Colors.red, fontSize: 20),
                   )
                 : Text(
-                    'Führe Scan durch',
+                    widget.scanPrompt,
                     style: TextStyle(fontSize: 20),
                   ),
             StarWarsButton(
-                child: Text("Abbrechen"),
-                onPressed: () {
-                  Navigator.of(context).pushReplacementNamed(ScannerResultScreen.routeName);
-                })
+              child: Text("Abbrechen"),
+              onPressed: () => widget.onCancel(context),
+            )
           ],
         ),
       ],
@@ -84,20 +101,20 @@ class _ScanScreenState extends State<ScanScreen> {
       if (scannedCode != null) {
         final String format = describeEnum(scannedCode.format);
         if (format == "qrcode") {
-          GetIt.instance.get<DataService>().resolveScannedCode(scannedCode.code).then((result) => _displayResult(result));
+          widget.handleScannedCode(scannedCode.code).then((result) => _displayResult(result));
         }
       }
     });
   }
 
   void _displayResult(ScanResult result) {
-    if (result.idWasRecognized) {
+    if (result.scannedCodeWasRecognized) {
       controller?.pauseCamera();
       controller?.dispose();
-      Navigator.pushReplacementNamed(context, ScannerResultScreen.routeName, arguments: result);
+      widget.handleSuccessfulScan(context, result as ScanSuccess);
     } else {
       setState(() {
-        errorMessage = "Unbekannte Signatur";
+        errorMessage = result is ScanFailure ? result.errorMessage : "Unbekannter Fehler";
       });
     }
   }

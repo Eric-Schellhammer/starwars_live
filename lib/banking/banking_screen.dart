@@ -1,13 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starwars_live/banking/receive_flow.dart';
+import 'package:starwars_live/banking/send_flow.dart';
 import 'package:starwars_live/data_access/data_service.dart';
-import 'package:starwars_live/data_access/local_database.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
-import 'package:starwars_live/model/account.dart';
-import 'package:starwars_live/model/person.dart';
+import 'package:starwars_live/main.dart';
+import 'package:starwars_live/model/banking.dart';
 
 class BankingScreen extends StatefulWidget {
   static const String routeName = "/banking_screen";
@@ -17,68 +16,71 @@ class BankingScreen extends StatefulWidget {
 }
 
 class BankingScreenState extends State<BankingScreen> {
-  int? credits;
-  String? accountCode;
+  late Future<int> creditsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    var dataService = GetIt.instance.get<DataService>();
+    creditsFuture = dataService.getLoggedInPerson().then((person) => dataService.getCredits(person.key));
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (!_loaded()) {
-      SharedPreferences.getInstance().then((preferences) {
-        final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT)!); // TODO handle missing account
-        final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
-        db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) {
-              setState(() {
-                this.credits = (person as Person).credits;
-                this.accountCode = person.key.intKey.toString();
-              });
-            }));
-      });
-      return Scaffold(body: Center(child: Text("Kontaktiere Server...")));
-    }
-
     return Theme(
       data: Theme.of(context).copyWith(textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 2.0)),
       child: Scaffold(
         body: StarWarsSwipeToDismissScreen(
-          child: _getEntriesList(),
+          child: FutureBuilder<int>(
+            future: creditsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.hasData)
+                return _getEntriesList(snapshot.data!);
+              else
+                return Text("Kontaktiere server...");
+            },
+          ),
         ),
       ),
     );
   }
 
-  bool _loaded() {
-    return credits != null;
-  }
-
-  Widget _getEntriesList() {
+  Widget _getEntriesList(int credits) {
     return ListView(
       children: [
-        _buildBalanceTile(),
-        _buildSendTile(),
+        _buildBalanceTile(credits),
+        _buildSendTile(credits),
         _buildReceiveTile(),
       ],
     );
   }
 
-  Widget _buildBalanceTile() {
+  Widget _buildBalanceTile(int credits) {
     return StarWarsMenuFrame(
       child: ListTile(
         title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text("Kontostand:"),
-            Text(credits.toString()),
+            Text(new BankBalance(credits).toString()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSendTile() {
+  Widget _buildSendTile(int credits) {
     return StarWarsMenuFrame(
       child: ListTile(
-        title: Text("Sende Credits"),
-        onTap: null,
+        title: Text(
+          "Sende Credits",
+          style: credits > 0 ? null : TextStyle(color: MAIN_COLOR_INACTIVE),
+        ),
+        onTap: credits > 0
+            ? () => Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => BankingSendScreen1_ScanReceiver(maxAmount: credits)),
+                )
+            : null,
       ),
     );
   }
@@ -87,7 +89,9 @@ class BankingScreenState extends State<BankingScreen> {
     return StarWarsMenuFrame(
       child: ListTile(
         title: Text("Empfange Credits"),
-        onTap: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => BankingReceiveId(accountCode: accountCode!))),
+        onTap: () => Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => BankingReceiveScreen1_ShowReceiveId()),
+        ),
       ),
     );
   }

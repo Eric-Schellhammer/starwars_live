@@ -5,6 +5,7 @@ import 'package:starwars_live/banking/banking_screen.dart';
 import 'package:starwars_live/documents/documents_list_screen.dart';
 import 'package:starwars_live/documents/id_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
+import 'package:starwars_live/medscan/medscan_screen.dart';
 import 'package:starwars_live/scanner/scanner_screen.dart';
 import 'package:starwars_live/scanner/scanner_service.dart';
 import 'package:starwars_live/server/server_screen.dart';
@@ -51,11 +52,11 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
           StarWarsMenuButton(
             child: FittedBox(child: Text("Med Scan")),
-            onPressed: null,
+            onPressed: () => Navigator.of(context).pushNamed(MedScanScreen.routeName),
           ),
           StarWarsMenuButton(
             child: FittedBox(child: Text("Bank")),
-            onPressed: () => Navigator.of(context).pushNamed(BankingScreen.routeName),
+            onPressed: null, // () => Navigator.of(context).pushNamed(BankingScreen.routeName),
           ),
           StarWarsMenuButton(
             child: Text(""),

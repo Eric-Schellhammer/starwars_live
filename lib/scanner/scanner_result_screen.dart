@@ -38,10 +38,10 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
     if (result == null) {
       return Center(child: Text("Noch kein Scan durchgeführt"));
     }
-    if (!result!.idWasRecognized) {
+    if (!result!.scannedCodeWasRecognized) {
       return Center(child: Text("Unbekannte ID"));
     }
-    final RecognizedScanResult recognizedResult = result as RecognizedScanResult;
+    final RecognizedPersonScanResult recognizedResult = result as RecognizedPersonScanResult;
     final List<Widget> children = List.empty(growable: true);
     children.add(
       Padding(

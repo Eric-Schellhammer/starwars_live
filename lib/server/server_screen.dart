@@ -5,7 +5,6 @@ import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/data_access/local_database.dart';
 import 'package:starwars_live/data_access/online_database.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
-import 'package:starwars_live/model/account.dart';
 import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';
 import 'package:starwars_live/model/validation.dart';
@@ -32,15 +31,15 @@ class ServerScreenState extends State<ServerScreen> {
   void _initFuture() {
     futureIdDocumentLevel = SharedPreferences.getInstance().then((preferences) async {
       //final ex = await GetIt.instance.get<DataService>().getDb().getExport();
-      final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT)!); // TODO handle missing account
-      final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
-      return db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) {
-            this.person = person as Person;
-            return db.getWhere(DocumentKey.dbTableKey, (conditions) => conditions.whereEquals(Document.COL_OWNER, person.key.intKey)).then((documents) {
-              this.documents = documents.where((document) => document.type != DocumentType.PERSONAL_ID).toList(growable: false);
-              return documents.where((document) => document.type == DocumentType.PERSONAL_ID).first.level;
-            });
-          }));
+      var dataService = GetIt.instance.get<DataService>();
+      return dataService.getLoggedInPerson().then((person) {
+        this.person = person;
+        final StarWarsDb db = dataService.getDb();
+        return db.getWhere(DocumentKey.dbTableKey, (conditions) => conditions.whereEquals(Document.COL_OWNER, person.key.intKey)).then((documents) {
+          this.documents = documents.where((document) => document.type != DocumentType.PERSONAL_ID).toList(growable: false);
+          return documents.where((document) => document.type == DocumentType.PERSONAL_ID).first.level;
+        });
+      });
     });
   }
 
@@ -53,7 +52,7 @@ class ServerScreenState extends State<ServerScreen> {
             child: FutureBuilder<DocumentLevel>(
                 future: futureIdDocumentLevel,
                 builder: (context, snapshot) {
-                  final valid = snapshot.hasData && snapshot.data != null && person != null;
+                  final valid = snapshot.hasData && person != null;
                   if (valid)
                     return _getForPerson(person!, snapshot.data!);
                   else if (snapshot.hasError) return _getMissing();
@@ -64,11 +63,7 @@ class ServerScreenState extends State<ServerScreen> {
             child: FittedBox(child: Text("SYNC")),
             onPressed: () async {
               await GetIt.instance.get<SyncService>().fetchDatabase();
-              final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
-              await SharedPreferences.getInstance().then((preferences) => preferences.getInt(LOGGED_IN_ACCOUNT)).then((accountId) => db
-                  .getById(AccountKey(accountId!)) // TODO handle missing account
-                  .then((account) => db.getById((account as Account).personKey))
-                  .then((person) => GetIt.instance.get<ScannerService>().setScanner((person as Person).scannerLevel)));
+              await GetIt.instance.get<DataService>().getLoggedInPerson().then((person) => GetIt.instance.get<ScannerService>().setScanner(person.scannerLevel));
               _initFuture();
               setState(() {}); // reload page
             },

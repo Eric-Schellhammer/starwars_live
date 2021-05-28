@@ -8,6 +8,7 @@ import 'package:starwars_live/initialize/application_config.dart';
 import 'package:starwars_live/initialize/login_screen.dart';
 import 'package:starwars_live/initialize/menu_screen.dart';
 import 'package:starwars_live/initialize/mode_screen.dart';
+import 'package:starwars_live/medscan/medscan_screen.dart';
 import 'package:starwars_live/scanner/scanner_screen.dart';
 import 'package:starwars_live/scanner/scanner_result_screen.dart';
 import 'package:starwars_live/server/server_screen.dart';
@@ -37,6 +38,7 @@ class StarWarsLive extends StatelessWidget {
         BankingScreen.routeName: (ctx) => BankingScreen(),
         ScanScreen.routeName: (ctx) => ScanScreen(),
         ScannerResultScreen.routeName: (ctx) => ScannerResultScreen(),
+        MedScanScreen.routeName: (ctx) => MedScanScreen(),
         ServerScreen.routeName: (ctx) => ServerScreen(),
       },
     );

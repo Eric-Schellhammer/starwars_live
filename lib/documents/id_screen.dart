@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/data_access/local_database.dart';
 import 'package:starwars_live/documents/document_screen.dart';
-import 'package:starwars_live/model/account.dart';
 import 'package:starwars_live/model/document.dart';
-import 'package:starwars_live/model/person.dart';
 
 class IdScreen extends StatefulWidget {
   static const String routeName = "/id_screen";
@@ -21,15 +18,9 @@ class IdScreenState extends State<IdScreen> {
   @override
   void initState() {
     super.initState();
-    futureDocument = SharedPreferences.getInstance().then((preferences) {
-      final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT)!); // TODO handle missing account
-      final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
-      return db
-          .getById(accountKey)
-          .then((account) => db.getById((account as Account).personKey))
-          .then((person) => db.getById((person as Person).documentIdKey))
-          .then((document) => document as Document);
-    });
+    var dataService = GetIt.instance.get<DataService>();
+    final StarWarsDb db = dataService.getDb();
+    futureDocument = dataService.getLoggedInPerson().then((person) => db.getById(person.documentIdKey)).then((document) => document as Document);
   }
 
   @override
@@ -42,7 +33,7 @@ class IdScreenState extends State<IdScreen> {
             if (snapshot.hasData) {
               return DocumentScreen(document: snapshot.data!);
             } else if (snapshot.hasError) {
-              return Text("Fehler beim Laden des Dokuments.");
+              return Text("Fehler beim Laden des Dokuments: " + snapshot.error.toString());
             }
             return Text("Kontaktiere Server...");
           },

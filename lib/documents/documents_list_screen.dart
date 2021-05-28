@@ -1,14 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starwars_live/data_access/data_service.dart';
-import 'package:starwars_live/data_access/local_database.dart';
 import 'package:starwars_live/documents/document_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
-import 'package:starwars_live/model/account.dart';
 import 'package:starwars_live/model/document.dart';
-import 'package:starwars_live/model/person.dart';
 
 class DocumentsListScreen extends StatefulWidget {
   static const String routeName = "/documents_list_screen";
@@ -23,18 +19,14 @@ class DocumentsListScreenState extends State<DocumentsListScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_loaded()) {
-      SharedPreferences.getInstance().then((preferences) {
-        final AccountKey accountKey = AccountKey(preferences.getInt(LOGGED_IN_ACCOUNT)!); // TODO handle missing account
-        final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
-        db.getById(accountKey).then((account) => db.getById((account as Account).personKey).then((person) => (person as Person).getKey().intKey).then((personKey) => db
-                .getWhere(DocumentKey.dbTableKey,
-                    (conditions) => conditions.whereEquals(Document.COL_OWNER, personKey).whereNotEquals(Document.COL_TYPE, DocumentType.PERSONAL_ID.intKey))
-                .then((documents) {
-              setState(() {
-                this.documents = documents;
-              });
-            })));
-      });
+      var dataService = GetIt.instance.get<DataService>();
+      dataService.getLoggedInPersonKey().then((personKey) => dataService
+          .getDb()
+          .getWhere(
+            DocumentKey.dbTableKey,
+            (conditions) => conditions.whereEquals(Document.COL_OWNER, personKey.intKey).whereNotEquals(Document.COL_TYPE, DocumentType.PERSONAL_ID.intKey),
+          )
+          .then((documents) => setState(() => this.documents = documents)));
       return Scaffold(body: Center(child: Text("Kontaktiere Server...")));
     }
 

@@ -4,12 +4,13 @@ import 'package:flutter/widgets.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:starwars_live/model/account.dart';
+import 'package:starwars_live/model/banking.dart';
 import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';
 
 class StarWarsDb {
-  static const int _version = 12;
-  static final List<DbTable> _tables = [AccountTable(), PersonTable(), DocumentTable()];
+  static const int _version = 16;
+  static final List<DbTable> _tables = [AccountTable(), PersonTable(), DocumentTable(), CreditTransferTable()];
 
   static Map<DbTableKey, DbTable>? _tablesByKey;
   final Future<Database> _database = _createDatabase();
@@ -45,14 +46,27 @@ class StarWarsDb {
   Future<List<DB_ENTRY>> getAll<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> table) async =>
       _database.then((db) => _tablesByKey![table]!.getAll(db)).then((list) => list as List<DB_ENTRY>);
 
-  Future<DB_ENTRY> getById<DB_ENTRY extends DbEntry>(DbEntryKey key) async =>
-      _database.then((db) => _tablesByKey![key.getDbTableKey()]!.getById(db, key)).then((entry) => entry as DB_ENTRY);
+  Future<DB_ENTRY?> getByIdOrNull<DB_ENTRY extends DbEntry>(DbEntryKey key) async =>
+      _database.then((db) => _tablesByKey![key.getDbTableKey()]!.getById(db, key)).then((entry) => entry == null ? null : entry as DB_ENTRY);
+
+  Future<DB_ENTRY> getById<DB_ENTRY extends DbEntry>(DbEntryKey key) async => getByIdOrNull(key).then((entry) {
+        if (entry != null)
+          return entry as DB_ENTRY;
+        else
+          throw Exception("No entry for ID");
+      });
 
   Future<List<DB_ENTRY>> getWhere<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> table, void Function(ConditionBuilder) conditions) {
     final ConditionBuilder builder = ConditionBuilder();
     conditions.call(builder);
     return _database.then((db) => _tablesByKey![table]!.getWhere(db, builder)).then((list) => list as List<DB_ENTRY>);
   }
+
+  Future<DB_ENTRY?> getSingleWhereOrNull<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> table, void Function(ConditionBuilder) conditions) =>
+      getWhere(table, conditions).then((matches) => matches.isEmpty ? null : matches.single);
+
+  Future<DB_ENTRY?> getSingleWhere<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> table, void Function(ConditionBuilder) conditions) =>
+      getWhere(table, conditions).then((matches) => matches.single);
 
   Future<void> closeDatabase() async {
     final Database db = await _database;
@@ -105,16 +119,22 @@ abstract class DbEntry {
 abstract class DbTable<DB_ENTRY extends DbEntry, DB_ENTRY_KEY extends DbEntryKey> {
   DbTableKey getDbTableKey();
 
-  String getIdColumnName();
+  String? getIdColumnName();
 
   Map<String, String> getDataColumnDefinitions();
 
   DB_ENTRY fromJson(Map<String, dynamic> entryJson);
 
   String createTableCommand() {
-    String command = "CREATE TABLE " + getDbTableKey().getTableName() + " (" + getIdColumnName() + " INTEGER PRIMARY KEY";
+    String command = "CREATE TABLE " + getDbTableKey().getTableName() + " (";
+    _ifIdColumnName((idColumnName) => command += idColumnName + " INTEGER PRIMARY KEY, ");
+    bool first = true;
     getDataColumnDefinitions().entries.forEach((columnDefinition) {
-      command += ", " + columnDefinition.key + " " + columnDefinition.value;
+      if (first)
+        first = false;
+      else
+        command += ", ";
+      command += columnDefinition.key + " " + columnDefinition.value;
     });
     command += ")";
     return command;
@@ -122,10 +142,18 @@ abstract class DbTable<DB_ENTRY extends DbEntry, DB_ENTRY_KEY extends DbEntryKey
 
   Future<int> insert(Database db, DB_ENTRY entry) async => await db.insert(getDbTableKey().getTableName(), entry.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
 
-  Future<int> update(Database db, DB_ENTRY entry) async =>
-      await db.update(getDbTableKey().getTableName(), entry.toJson(), where: getIdColumnName() + " = ?", whereArgs: [entry.getKey().intKey]);
+  Future<int> update(Database db, DB_ENTRY entry) async => await db.update(
+        getDbTableKey().getTableName(),
+        entry.toJson(),
+        where: _getExistingIdColumnName() + " = ?",
+        whereArgs: [entry.getKey().intKey],
+      );
 
-  Future<int> delete(Database db, DB_ENTRY_KEY key) async => await db.delete(getDbTableKey().getTableName(), where: getIdColumnName() + ' = ?', whereArgs: [key.intKey]);
+  Future<int> delete(Database db, DB_ENTRY_KEY key) async => await db.delete(
+        getDbTableKey().getTableName(),
+        where: _getExistingIdColumnName() + ' = ?',
+        whereArgs: [key.intKey],
+      );
 
   Future<List<DB_ENTRY>> getAll(Database db) async {
     final result = await db.query(getDbTableKey().getTableName(), columns: _getAllColumnNames());
@@ -133,22 +161,42 @@ abstract class DbTable<DB_ENTRY extends DbEntry, DB_ENTRY_KEY extends DbEntryKey
   }
 
   Future<DB_ENTRY?> getById(Database db, DB_ENTRY_KEY key) async {
-    final List<Map<String, dynamic>> results =
-        await db.query(getDbTableKey().getTableName(), columns: _getAllColumnNames(), where: getIdColumnName() + ' = ?', whereArgs: [key.intKey]);
+    final List<Map<String, dynamic>> results = await db.query(
+      getDbTableKey().getTableName(),
+      columns: _getAllColumnNames(),
+      where: _getExistingIdColumnName() + ' = ?',
+      whereArgs: [key.intKey],
+    );
     if (results.length > 0) return fromJson(results.first);
     return null;
   }
 
   Future<List<DB_ENTRY>> getWhere(Database db, ConditionBuilder conditions) async {
-    final result = await db.query(getDbTableKey().getTableName(), columns: _getAllColumnNames(), where: conditions.where, whereArgs: conditions.whereArgs);
+    final result = await db.query(
+      getDbTableKey().getTableName(),
+      columns: _getAllColumnNames(),
+      where: conditions.where,
+      whereArgs: conditions.whereArgs,
+    );
     return result.toList(growable: false).map((entryJson) => fromJson(entryJson)).toList(growable: false);
   }
 
   List<String> _getAllColumnNames() {
     final List<String> allNames = List.empty(growable: true);
-    allNames.add(getIdColumnName());
+    _ifIdColumnName((idColumnName) => allNames.add(idColumnName));
     allNames.addAll(getDataColumnDefinitions().keys);
     return allNames;
+  }
+
+  void _ifIdColumnName(void Function(String) handler) {
+    final String? name = getIdColumnName();
+    if (name != null) handler.call(name);
+  }
+
+  String _getExistingIdColumnName() {
+    final String? name = getIdColumnName();
+    if (name == null) throw Exception("ID Column is required for this operation, but none was defined");
+    return name;
   }
 }
 
