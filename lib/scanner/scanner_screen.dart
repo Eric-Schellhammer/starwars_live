@@ -25,6 +25,7 @@ class ScannerScreen extends StatefulWidget {
   final void Function(BuildContext, ScanSuccess) handleSuccessfulScan;
   final void Function(BuildContext) onCancel;
   final String scanPrompt;
+  final String? testResult;
 
   const ScannerScreen({
     Key? key,
@@ -32,6 +33,7 @@ class ScannerScreen extends StatefulWidget {
     required this.handleSuccessfulScan,
     required this.onCancel,
     this.scanPrompt = "Führe Scan durch",
+    this.testResult = null,
   }) : super(key: key);
 
   @override
@@ -74,21 +76,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       detailChildren: [
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            (errorMessage.isNotEmpty)
-                ? Text(
-                    errorMessage,
-                    style: TextStyle(color: Colors.red, fontSize: 20),
-                  )
-                : Text(
-                    widget.scanPrompt,
-                    style: TextStyle(fontSize: 20),
-                  ),
-            StarWarsButton(
-              child: Text("Abbrechen"),
-              onPressed: () => widget.onCancel(context),
-            )
-          ],
+          children: _buildDetailChildren(),
         ),
       ],
     );
@@ -117,6 +105,32 @@ class _ScannerScreenState extends State<ScannerScreen> {
         errorMessage = result is ScanFailure ? result.errorMessage : "Unbekannter Fehler";
       });
     }
+  }
+
+  List<Widget> _buildDetailChildren() {
+    final List<Widget> detailChildren = List.empty(growable: true);
+    if (errorMessage.isNotEmpty) {
+      detailChildren.add(Text(
+        errorMessage,
+        style: TextStyle(color: Colors.red, fontSize: 20),
+      ));
+    } else {
+      detailChildren.add(Text(
+        widget.scanPrompt,
+        style: TextStyle(fontSize: 20),
+      ));
+    }
+    detailChildren.add(StarWarsButton(
+      child: Text("Abbrechen"),
+      onPressed: () => widget.onCancel(context),
+    ));
+    if (widget.testResult != null) {
+      detailChildren.add(StarWarsButton(
+        child: Text("Fake Scan"),
+        onPressed: () => widget.handleScannedCode(widget.testResult!).then((result) => _displayResult(result)),
+      ));
+    }
+    return detailChildren;
   }
 
   @override

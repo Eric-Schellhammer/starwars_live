@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:starwars_live/banking/receive_flow.dart';
 import 'package:starwars_live/banking/send_flow.dart';
 import 'package:starwars_live/data_access/data_service.dart';
+import 'package:starwars_live/data_access/temp_storage.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/main.dart';
 import 'package:starwars_live/model/banking.dart';
@@ -46,12 +47,15 @@ class BankingScreenState extends State<BankingScreen> {
   }
 
   Widget _getEntriesList(int credits) {
+    final List<Widget> children = [
+      _buildBalanceTile(credits),
+      _buildSendTile(credits),
+      _buildReceiveTile(),
+    ];
+    final CreditTransfer? lastSendTransfer = GetIt.instance.get<TempStorageService>().lastSendTransfer;
+    if (lastSendTransfer != null) children.add(_buildLastTransferTile(lastSendTransfer));
     return ListView(
-      children: [
-        _buildBalanceTile(credits),
-        _buildSendTile(credits),
-        _buildReceiveTile(),
-      ],
+      children: children,
     );
   }
 
@@ -91,6 +95,17 @@ class BankingScreenState extends State<BankingScreen> {
         title: Text("Empfange Credits"),
         onTap: () => Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => BankingReceiveScreen1_ShowReceiveId()),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLastTransferTile(CreditTransfer lastSendTransfer) {
+    return StarWarsMenuFrame(
+      child: ListTile(
+        title: Text("Letzten Sende-Transfer nochmal anzeigen"),
+        onTap: () => Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => BankingSendScreen3_ShowTransfer(creditTransfer: lastSendTransfer)),
         ),
       ),
     );

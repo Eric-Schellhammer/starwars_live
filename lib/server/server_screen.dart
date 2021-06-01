@@ -63,7 +63,9 @@ class ServerScreenState extends State<ServerScreen> {
             child: FittedBox(child: Text("SYNC")),
             onPressed: () async {
               await GetIt.instance.get<SyncService>().fetchDatabase();
-              await GetIt.instance.get<DataService>().getLoggedInPerson().then((person) => GetIt.instance.get<ScannerService>().setScanner(person.scannerLevel));
+              await GetIt.instance.get<DataService>().getLoggedInPerson().then(
+                    (person) => GetIt.instance.get<ScannerService>().setScanner(person.scannerLevel, person.hasMedScanner),
+                  );
               _initFuture();
               setState(() {}); // reload page
             },

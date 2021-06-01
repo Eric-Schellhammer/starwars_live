@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/data_access/local_database.dart';
+import 'package:starwars_live/data_access/temp_storage.dart';
 import 'package:starwars_live/initialize/menu_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/main.dart';
@@ -26,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    GetIt.instance.get<TempStorageService>().lastSendTransfer = null;
     return Scaffold(
       appBar: AppBar(
         title: Text("Star Wars Live"),
@@ -105,10 +107,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (account != null) {
         SharedPreferences.getInstance().then((preferences) => preferences.setInt(LOGGED_IN_ACCOUNT, account.getKey().intKey));
         final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
-        db
-            .getById(account.personKey)
-            .then((person) => GetIt.instance.get<ScannerService>().setScanner((person as Person).scannerLevel))
-            .then((__) => Navigator.of(context).pushNamed(MenuScreen.routeName, arguments: userName));
+        db.getById(account.personKey).then((person) {
+          final Person p = person as Person;
+          GetIt.instance.get<ScannerService>().setScanner(p.scannerLevel, p.hasMedScanner);
+        }).then((__) => Navigator.of(context).pushNamed(MenuScreen.routeName, arguments: userName));
       } else {
         setState(() {
           errorMessage = "Login fehlgeschlagen";

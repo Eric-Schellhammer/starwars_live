@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:starwars_live/data_access/data_service.dart';
@@ -52,7 +55,17 @@ class BankingReceiveScreen2_ScanTransfer extends StatelessWidget {
       )),
       onCancel: (context) => Navigator.of(context).pop(),
       scanPrompt: "Lese Transfer ein",
+      //testResult: fakeTransfer(),
     );
+  }
+
+  String fakeTransfer() {
+    return jsonEncode(CreditTransfer(
+      code: String.fromCharCodes(List.generate(20, (index) => Random().nextInt(33) + 89)),
+      sender: BankAccountKey(553328), // sender: biff
+      receiver: BankAccountKey(43628), // receiver: marty
+      amount: 100,
+    ));
   }
 }
 

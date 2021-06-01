@@ -1,3 +1,6 @@
+Remove Login auf GitHub via Password
+
+Banking upload to Server
 
 read remote data version
 synchronize only when needed

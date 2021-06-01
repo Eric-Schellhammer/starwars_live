@@ -1,7 +1,7 @@
 import 'package:starwars_live/data_access/local_database.dart';
 import 'package:intl/intl.dart';
 
-const String TRANSFER_JSON_CODE = "transferCode";
+const String TRANSFER_JSON_CODE = "code";
 const String TRANSFER_JSON_RECEIVER = "receiver";
 const String TRANSFER_JSON_SENDER = "sender";
 const String TRANSFER_JSON_AMOUNT = "amount";

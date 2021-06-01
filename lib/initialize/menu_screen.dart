@@ -19,16 +19,15 @@ class MenuScreen extends StatefulWidget {
   _MenuScreenState createState() => _MenuScreenState();
 }
 
-// TODO make scaling adapt to device
-const SCALE_MENU = 2.1;
-const SCALE_NAV = 1.8;
-
 class _MenuScreenState extends State<MenuScreen> {
   String userName = "";
 
   @override
   Widget build(BuildContext context) {
     userName = ModalRoute.of(context)?.settings.arguments as String? ?? "";
+    final scannerService = GetIt.instance.get<ScannerService>();
+    final bool docScanner = scannerService.isScannerPresent();
+    final bool medScanner = scannerService.hasMedScanner();
     return StarWarsMasterDetailScreen(
       masterTextFactor: 3.0,
       masterChild: GridView.count(
@@ -44,7 +43,7 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
           StarWarsMenuButton(
             child: FittedBox(child: Text("Scanner")),
-            onPressed: GetIt.instance.get<ScannerService>().isScannerPresent() ? () => Navigator.of(context).pushNamed(ScanScreen.routeName) : null,
+            onPressed: docScanner ? () => Navigator.of(context).pushNamed(ScanScreen.routeName) : null,
           ),
           StarWarsMenuButton(
             child: FittedBox(child: Text("Lizenzen")),
@@ -52,11 +51,11 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
           StarWarsMenuButton(
             child: FittedBox(child: Text("Med Scan")),
-            onPressed: () => Navigator.of(context).pushNamed(MedScanScreen.routeName),
+            onPressed: medScanner ? () => Navigator.of(context).pushNamed(MedScanScreen.routeName) : null,
           ),
           StarWarsMenuButton(
             child: FittedBox(child: Text("Bank")),
-            onPressed: null, // () => Navigator.of(context).pushNamed(BankingScreen.routeName),
+            onPressed: () => Navigator.of(context).pushNamed(BankingScreen.routeName),
           ),
           StarWarsMenuButton(
             child: Text(""),

@@ -9,7 +9,7 @@ import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';
 
 class StarWarsDb {
-  static const int _version = 16;
+  static const int _version = 17;
   static final List<DbTable> _tables = [AccountTable(), PersonTable(), DocumentTable(), CreditTransferTable()];
 
   static Map<DbTableKey, DbTable>? _tablesByKey;

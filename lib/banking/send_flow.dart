@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:starwars_live/data_access/data_service.dart';
+import 'package:starwars_live/data_access/temp_storage.dart';
 import 'package:starwars_live/documents/document_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/model/banking.dart';
@@ -19,15 +21,20 @@ class BankingSendScreen1_ScanReceiver extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScannerScreen(
       handleScannedCode: (code) => GetIt.instance.get<DataService>().resolveScannedBankAccount(code),
-      handleSuccessfulScan: (context, result) => Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => BankingSendScreen2_EnterAmount(
-          maxAmount: maxAmount,
-          receiverBankAccount: (result as RecognizedBankAccount).bankAccountKey,
-        ),
-      )),
+      handleSuccessfulScan: (context, result) => navigate(context, (result as RecognizedBankAccount).bankAccountKey),
       onCancel: (context) => Navigator.of(context).pop(),
       scanPrompt: "Lese Empfängerkonto ein",
+      //testResult: new BankAccountKey(43628).intKey.toString(),
     );
+  }
+
+  void navigate(BuildContext context, BankAccountKey receiverBankAccount) {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (context) => BankingSendScreen2_EnterAmount(
+        maxAmount: maxAmount,
+        receiverBankAccount: receiverBankAccount,
+      ),
+    ));
   }
 }
 
@@ -56,7 +63,7 @@ class BankingSendScreen2State extends State<BankingSendScreen2_EnterAmount> {
   void initState() {
     super.initState();
     controller = TextEditingController();
-    controller.text = "0";
+    controller.text = "";
     controller.addListener(() => setState(() {
           amount = int.tryParse(controller.text) ?? 0;
         }));
@@ -77,6 +84,8 @@ class BankingSendScreen2State extends State<BankingSendScreen2_EnterAmount> {
             TextField(
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              textAlign: TextAlign.end,
+              autofocus: true,
               controller: controller,
             ),
           ],
@@ -91,20 +100,21 @@ class BankingSendScreen2State extends State<BankingSendScreen2_EnterAmount> {
             builder: (context, snapshot) {
               return StarWarsTextButton(
                 text: "Credits abbuchen",
-                onPressed: snapshot.hasData && amount <= 0 && amount <= widget.maxAmount
-                    ? null
-                    : () {
+                onPressed: snapshot.hasData && amount > 0 && amount <= widget.maxAmount
+                    ? () async {
                         final CreditTransfer creditTransfer = CreditTransfer(
                           code: String.fromCharCodes(List.generate(20, (index) => random.nextInt(33) + 89)),
                           sender: snapshot.data!,
                           receiver: widget.receiverBankAccount,
                           amount: amount,
                         );
-                        GetIt.instance.get<DataService>().getDb().insert(creditTransfer);
+                        await GetIt.instance.get<DataService>().getDb().insert(creditTransfer);
+                        GetIt.instance.get<TempStorageService>().lastSendTransfer = creditTransfer;
                         Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => BankingSendScreen3_ShowTransfer(creditTransfer: creditTransfer),
                         ));
-                      },
+                      }
+                    : null,
               );
             },
           ),
@@ -127,7 +137,7 @@ class BankingSendScreen3_ShowTransfer extends StatelessWidget {
       masterChild: Center(
         child: QrScreenContents(
           title: "Transfer",
-          code: creditTransfer.toJson().toString(), // TODO convert JSON to String
+          code: jsonEncode(creditTransfer),
         ),
       ),
       detailTextFactor: 2.0,
