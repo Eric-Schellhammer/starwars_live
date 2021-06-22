@@ -1,77 +1,25 @@
-import 'package:starwars_live/data_access/local_database.dart';
+import 'package:moor/moor.dart';
+import 'package:starwars_live/data_access/base_database.dart';
 import 'package:starwars_live/model/person.dart';
+import 'package:json_annotation/json_annotation.dart' as j;
 
 /// This is a login account, associated to a Person
 
-class AccountKey extends DbEntryKey {
-  static final DbTableKey<Account> dbTableKey = DbTableKey<Account>("Account");
-
+@j.JsonSerializable()
+class AccountKey extends IntKey {
   AccountKey(int intKey) : super(intKey);
-
-  DbTableKey getDbTableKey() {
-    return dbTableKey;
-  }
 }
 
-class Account extends DbEntry {
-  static const String COL_ID = "id";
-  static const String COL_LOGIN_NAME = "login_name";
-  static const String COL_PASSWORD = "password";
-  static const String COL_PERSON = "person";
-
-  AccountKey key;
-  String loginName;
-  String password;
-  PersonKey personKey;
-
-  Account({
-    required this.key,
-    required this.loginName,
-    required this.password,
-    required this.personKey,
-  });
-
-  factory Account.fromJson(Map<String, dynamic> data) => new Account(
-        key: AccountKey(data[COL_ID]),
-        loginName: data[COL_LOGIN_NAME],
-        password: data[COL_PASSWORD],
-        personKey: PersonKey(data[COL_PERSON]),
-      );
-
-  @override
-  DbEntryKey getKey() {
-    return key;
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        COL_ID: key.intKey,
-        COL_LOGIN_NAME: loginName,
-        COL_PASSWORD: password,
-        COL_PERSON: personKey.intKey,
-      };
+class Accounts extends Table {
+  IntColumn get key => integer().map(AccountKeyConverter())();
+  TextColumn get loginName => text()();
+  TextColumn get password => text()();
+  IntColumn get personKey => integer().map(PersonKeyConverter())();
 }
 
-class AccountTable extends DbTable<Account, AccountKey> {
+class AccountKeyConverter extends IntKeyConverter<AccountKey> {
   @override
-  DbTableKey<Account> getDbTableKey() {
-    return AccountKey.dbTableKey;
+  AccountKey createKey(int fromDb) {
+    return AccountKey(fromDb);
   }
-
-  @override
-  String getIdColumnName() {
-    return Account.COL_ID;
-  }
-
-  @override
-  Map<String, String> getDataColumnDefinitions() {
-    return {
-      Account.COL_LOGIN_NAME: "TEXT",
-      Account.COL_PASSWORD: "TEXT",
-      Account.COL_PERSON: "INTEGER",
-    };
-  }
-
-  @override
-  Account fromJson(Map<String, dynamic> entryJson) => Account.fromJson(entryJson);
 }

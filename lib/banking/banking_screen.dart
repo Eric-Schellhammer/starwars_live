@@ -4,10 +4,12 @@ import 'package:get_it/get_it.dart';
 import 'package:starwars_live/banking/receive_flow.dart';
 import 'package:starwars_live/banking/send_flow.dart';
 import 'package:starwars_live/data_access/data_service.dart';
+import 'package:starwars_live/data_access/moor_database.dart';
 import 'package:starwars_live/data_access/temp_storage.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/main.dart';
 import 'package:starwars_live/model/banking.dart';
+import 'package:starwars_live/ui_services/user_service.dart';
 
 class BankingScreen extends StatefulWidget {
   static const String routeName = "/banking_screen";
@@ -17,14 +19,7 @@ class BankingScreen extends StatefulWidget {
 }
 
 class BankingScreenState extends State<BankingScreen> {
-  late Future<int> creditsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    var dataService = GetIt.instance.get<DataService>();
-    creditsFuture = dataService.getLoggedInPerson().then((person) => dataService.getCredits(person.key));
-  }
+  final Future<int> creditsFuture = GetIt.instance.get<UserService>().getLoggedInPerson().then((person) => GetIt.instance.get<DataService>().getCredits(person.id));
 
   @override
   Widget build(BuildContext context) {

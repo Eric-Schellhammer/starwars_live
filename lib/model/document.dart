@@ -1,9 +1,12 @@
-import 'package:starwars_live/data_access/local_database.dart';
+import 'package:json_annotation/json_annotation.dart' as j;
+import 'package:moor/moor.dart';
+import 'package:starwars_live/data_access/base_database.dart';
 import 'package:starwars_live/model/person.dart';
 import 'package:starwars_live/model/validation.dart';
 
 /// this is a Document owned by a Person
 
+@j.JsonSerializable()
 class DocumentType {
   static final Map<int, DocumentType> _typeByKey = Map();
   final int intKey;
@@ -23,6 +26,10 @@ class DocumentType {
   @override
   int get hashCode => intKey.hashCode;
 
+  int toJson() {
+    return intKey;
+  }
+
   static final PERSONAL_ID = DocumentType._(1, "Persönliche ID");
   static final CAPTAINS_LICENCE = DocumentType._(2, "Kapitänslizenz");
   static final VEHICLE_REGISTRATION = DocumentType._(3, "Schiffsregistrierung");
@@ -31,91 +38,56 @@ class DocumentType {
   static final UNKNOWN = DocumentType._(0, "unbekanntes Dokument");
 
   static List<DocumentType> ensureLoaded() {
-    return [PERSONAL_ID, CAPTAINS_LICENCE, VEHICLE_REGISTRATION, WEAPON_LICENCE, SECTOR_TRADE_LICENCE, UNKNOWN];
+    return [
+      PERSONAL_ID,
+      CAPTAINS_LICENCE,
+      VEHICLE_REGISTRATION,
+      WEAPON_LICENCE,
+      SECTOR_TRADE_LICENCE,
+      UNKNOWN,
+    ];
   }
 }
 
-class DocumentKey extends DbEntryKey {
-  static final DbTableKey<Document> dbTableKey = DbTableKey<Document>("Document");
-
+@j.JsonSerializable()
+class DocumentKey extends IntKey {
   DocumentKey(int intKey) : super(intKey);
+}
 
-  DbTableKey getDbTableKey() {
-    return dbTableKey;
+class Documents extends Table {
+  IntColumn get id => integer().map(DocumentKeyConverter())();
+
+  TextColumn get code => text()();
+
+  IntColumn get ownerKey => integer().map(PersonKeyConverter())();
+
+  IntColumn get documentType => integer().map(DocumentTypeConverter())();
+
+  TextColumn get information => text().nullable()();
+
+  IntColumn get level => integer().map(DocumentLevelConverter())();
+}
+
+class DocumentKeyConverter extends IntKeyConverter<DocumentKey> {
+  @override
+  DocumentKey createKey(int fromDb) => DocumentKey(fromDb);
+}
+
+class DocumentTypeConverter extends TypeConverter<DocumentType, int> {
+  @override
+  DocumentType? mapToDart(int? fromDb) {
+    return fromDb != null ? DocumentType.fromKey(fromDb) : null;
+  }
+
+  @override
+  int? mapToSql(DocumentType? value) {
+    return value != null ? value.intKey : null;
   }
 }
 
-class Document extends DbEntry {
-  static const String COL_ID = "id";
-  static const String COL_CODE = "code";
-  static const String COL_OWNER = "ownerKey";
-  static const String COL_TYPE = "type";
-  static const String COL_INFO = "information";
-  static const String COL_LEVEL = "level";
-
-  DocumentKey key;
-  String code;
-  PersonKey ownerKey;
-  DocumentType type;
-  String? information;
-  DocumentLevel level;
-
-  Document({
-    required this.key,
-    required this.code,
-    required this.ownerKey,
-    required this.type,
-    this.information,
-    required this.level,
-  });
-
-  factory Document.fromJson(Map<String, dynamic> data) => new Document(
-        key: DocumentKey(data[COL_ID]),
-        code: data[COL_CODE],
-        ownerKey: PersonKey(data[COL_OWNER]),
-        type: DocumentType.fromKey(data[COL_TYPE]),
-        information: data[COL_INFO],
-        level: DocumentLevel.createForgery(data[COL_LEVEL]),
-      );
-
+class DocumentLevelConverter extends IntKeyConverter<DocumentLevel> {
   @override
-  DbEntryKey getKey() {
-    return key;
+  DocumentLevel createKey(int fromDb) {
+    return DocumentLevel.createForgery(fromDb);
   }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        COL_ID: key.intKey,
-        COL_CODE: code,
-        COL_OWNER: ownerKey.intKey,
-        COL_TYPE: type.intKey,
-        COL_INFO: information,
-        COL_LEVEL: level.level,
-      };
-}
-
-class DocumentTable extends DbTable<Document, DocumentKey> {
-  @override
-  DbTableKey<Document> getDbTableKey() {
-    return DocumentKey.dbTableKey;
-  }
-
-  @override
-  String getIdColumnName() {
-    return Document.COL_ID;
-  }
-
-  @override
-  Map<String, String> getDataColumnDefinitions() {
-    return {
-      Document.COL_CODE: "TEXT",
-      Document.COL_OWNER: "INTEGER",
-      Document.COL_TYPE: "INTEGER",
-      Document.COL_INFO: "TEXT",
-      Document.COL_LEVEL: "INTEGER",
-    };
-  }
-
-  @override
-  Document fromJson(Map<String, dynamic> entryJson) => Document.fromJson(entryJson);
 }

@@ -5,11 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:starwars_live/data_access/data_service.dart';
+import 'package:starwars_live/data_access/moor_database.dart';
 import 'package:starwars_live/data_access/temp_storage.dart';
 import 'package:starwars_live/documents/document_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/model/banking.dart';
 import 'package:starwars_live/scanner/scanner_screen.dart';
+import 'package:starwars_live/ui_services/scanner_service.dart';
+import 'package:starwars_live/ui_services/user_service.dart';
 
 // ignore: camel_case_types
 class BankingSendScreen1_ScanReceiver extends StatelessWidget {
@@ -20,7 +23,7 @@ class BankingSendScreen1_ScanReceiver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScannerScreen(
-      handleScannedCode: (code) => GetIt.instance.get<DataService>().resolveScannedBankAccount(code),
+      handleScannedCode: (code) => GetIt.instance.get<ScannerService>().resolveScannedBankAccount(code),
       handleSuccessfulScan: (context, result) => navigate(context, (result as RecognizedBankAccount).bankAccountKey),
       onCancel: (context) => Navigator.of(context).pop(),
       scanPrompt: "Lese Empfängerkonto ein",
@@ -54,22 +57,16 @@ class BankingSendScreen2_EnterAmount extends StatefulWidget {
 }
 
 class BankingSendScreen2State extends State<BankingSendScreen2_EnterAmount> {
-  late final TextEditingController controller;
-  late final Random random;
-  late final Future<BankAccountKey> senderBankAccount;
+  final TextEditingController controller = TextEditingController();
+  final Random random = Random.secure();
+  final Future<BankAccountKey> senderBankAccount = GetIt.instance.get<UserService>().getLoggedInPerson().then((loggedInPerson) => loggedInPerson.bankAccountKey);
   int amount = 0;
 
   @override
   void initState() {
     super.initState();
-    controller = TextEditingController();
     controller.text = "";
-    controller.addListener(() => setState(() {
-          amount = int.tryParse(controller.text) ?? 0;
-        }));
-    random = Random.secure();
-    final DataService dataService = GetIt.instance.get<DataService>();
-    senderBankAccount = dataService.getLoggedInPerson().then((loggedInPerson) => loggedInPerson.bankAccountKey);
+    controller.addListener(() => setState(() => amount = int.tryParse(controller.text) ?? 0));
   }
 
   @override
@@ -108,7 +105,7 @@ class BankingSendScreen2State extends State<BankingSendScreen2_EnterAmount> {
                           receiver: widget.receiverBankAccount,
                           amount: amount,
                         );
-                        await GetIt.instance.get<DataService>().getDb().insert(creditTransfer);
+                        await GetIt.instance.get<DataService>().addTransfer(creditTransfer);
                         GetIt.instance.get<TempStorageService>().lastSendTransfer = creditTransfer;
                         Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => BankingSendScreen3_ShowTransfer(creditTransfer: creditTransfer),

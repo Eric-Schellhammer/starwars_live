@@ -1,17 +1,15 @@
-import 'dart:convert';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/documents/document_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/model/banking.dart';
 import 'package:starwars_live/scanner/scanner_screen.dart';
+import 'package:starwars_live/ui_services/scanner_service.dart';
+import 'package:starwars_live/ui_services/user_service.dart';
 
 // ignore: camel_case_types
 class BankingReceiveScreen1_ShowReceiveId extends StatelessWidget {
-  late Future<BankAccountKey> bankAccountKeyFuture = GetIt.instance.get<DataService>().getLoggedInPerson().then((person) => person.bankAccountKey);
+  final Future<BankAccountKey> bankAccountKeyFuture = GetIt.instance.get<UserService>().getLoggedInPerson().then((person) => person.bankAccountKey);
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +47,7 @@ class BankingReceiveScreen2_ScanTransfer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScannerScreen(
-      handleScannedCode: (code) => GetIt.instance.get<DataService>().resolveScannedTransfer(code),
+      handleScannedCode: (code) => GetIt.instance.get<ScannerService>().resolveScannedTransfer(code),
       handleSuccessfulScan: (context, result) => Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => BankingReceiveScreen3_ShowResult(result: result as ValidTransferScanResult),
       )),
@@ -57,15 +55,6 @@ class BankingReceiveScreen2_ScanTransfer extends StatelessWidget {
       scanPrompt: "Lese Transfer ein",
       //testResult: fakeTransfer(),
     );
-  }
-
-  String fakeTransfer() {
-    return jsonEncode(CreditTransfer(
-      code: String.fromCharCodes(List.generate(20, (index) => Random().nextInt(33) + 89)),
-      sender: BankAccountKey(553328), // sender: biff
-      receiver: BankAccountKey(43628), // receiver: marty
-      amount: 100,
-    ));
   }
 }
 

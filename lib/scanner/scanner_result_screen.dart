@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:starwars_live/data_access/data_service.dart';
+import 'package:starwars_live/data_access/moor_database.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/scanner/scanner_screen.dart';
-import 'package:starwars_live/scanner/scanner_service.dart';
+import 'package:starwars_live/ui_services/scanner_service.dart';
+import 'package:starwars_live/ui_services/user_service.dart';
 
 class ScannerResultScreen extends StatefulWidget {
   static const routeName = "/scanner_result_screen";
@@ -28,7 +29,7 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
       detailChildren: [
         StarWarsTextButton(
           text: "Starte Scan",
-          onPressed: () => Navigator.of(context).pushReplacementNamed(ScanScreen.routeName),
+          onPressed: () => Navigator.of(context).pushReplacementNamed(IdScanScreen.routeName),
         ),
       ],
     );
@@ -55,9 +56,9 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
 
     final Document recognizedDocument = recognizedResult.document;
     children.add(
-      Text(recognizedDocument.type.name),
+      Text(recognizedDocument.documentType.name),
     );
-    if (recognizedDocument.type != DocumentType.PERSONAL_ID && recognizedDocument.information != null && recognizedDocument.information!.isNotEmpty) {
+    if (recognizedDocument.documentType != DocumentType.PERSONAL_ID && recognizedDocument.information != null && recognizedDocument.information!.isNotEmpty) {
       children.add(
         Text(recognizedDocument.information!),
       ); // TODO make multiline
@@ -65,7 +66,7 @@ class _ScannerResultScreenState extends State<ScannerResultScreen> {
 
     String idText;
     Color idColor;
-    if (GetIt.instance.get<ScannerService>().isDocumentValid(recognizedDocument)) {
+    if (GetIt.instance.get<UserService>().isDocumentValid(recognizedDocument)) {
       idText = "Dokument gültig";
       idColor = Colors.green;
     } else {

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starwars_live/data_access/data_service.dart';
-import 'package:starwars_live/data_access/local_database.dart';
+import 'package:starwars_live/data_access/moor_database.dart';
 import 'package:starwars_live/data_access/temp_storage.dart';
-import 'package:starwars_live/initialize/menu_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/main.dart';
-import 'package:starwars_live/model/person.dart';
-import 'package:starwars_live/scanner/scanner_service.dart';
+import 'package:starwars_live/main_screens/menu_screen.dart';
+import 'package:starwars_live/ui_services/user_service.dart';
 
 class LoginScreen extends StatefulWidget {
   static const routeName = "/login_screen";
@@ -105,11 +103,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void _checkLogin() {
     GetIt.instance.get<DataService>().validateAccount(userName, password).then((account) {
       if (account != null) {
-        SharedPreferences.getInstance().then((preferences) => preferences.setInt(LOGGED_IN_ACCOUNT, account.getKey().intKey));
-        final StarWarsDb db = GetIt.instance.get<DataService>().getDb();
-        db.getById(account.personKey).then((person) {
+        GetIt.instance.get<DataService>().getPersonByKey(account.personKey).then((person) {
           final Person p = person as Person;
-          GetIt.instance.get<ScannerService>().setScanner(p.scannerLevel, p.hasMedScanner);
+          GetIt.instance.get<UserService>().setUser(account.personKey, p.scannerLevel, p.hasMedScanner);
         }).then((__) => Navigator.of(context).pushNamed(MenuScreen.routeName, arguments: userName));
       } else {
         setState(() {

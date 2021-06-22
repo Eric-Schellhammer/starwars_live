@@ -1,103 +1,35 @@
-import 'package:starwars_live/data_access/local_database.dart';
-import 'package:starwars_live/model/banking.dart';
-import 'package:starwars_live/model/document.dart';
+import 'package:json_annotation/json_annotation.dart' as j;
+import 'package:moor/moor.dart';
+import 'package:starwars_live/data_access/base_database.dart';
 import 'package:starwars_live/model/validation.dart';
 
-/// This is an in-game character, i.e. SC or NSC
+import 'banking.dart';
+import 'document.dart';
 
-class PersonKey extends DbEntryKey {
-  static final DbTableKey<Person> dbTableKey = DbTableKey<Person>("Person");
-
+@j.JsonSerializable()
+class PersonKey extends IntKey {
   PersonKey(int intKey) : super(intKey);
-
-  DbTableKey getDbTableKey() {
-    return dbTableKey;
-  }
 }
 
-class Person extends DbEntry {
-  static const String COL_ID = "id";
-  static const String COL_FIRST_NAME = "first_name";
-  static const String COL_LAST_NAME = "last_name";
-  static const String COL_SCANNER_LEVEL = "scanner_level";
-  static const String COL_DOCUMENT_ID_KEY = "document_id";
-  static const String COL_BANK_ACCOUNT_KEY = "bankAccountKey";
-  static const String COL_HAS_MED_SCANNER = "hasMedScanner";
-  static const String COL_WANTED = "wanted";
+class Persons extends Table {
+  IntColumn get id => integer().map(PersonKeyConverter())();
 
-  PersonKey key;
-  String firstName;
-  String lastName;
-  ScannerLevel? scannerLevel;
-  DocumentKey documentIdKey;
-  BankAccountKey bankAccountKey;
-  bool hasMedScanner;
-  bool isWanted;
+  TextColumn get firstName => text()();
 
-  Person({
-    required this.key,
-    required this.firstName,
-    required this.lastName,
-    this.scannerLevel,
-    required this.documentIdKey,
-    required this.bankAccountKey,
-    this.hasMedScanner = false,
-    this.isWanted = false,
-  });
+  TextColumn get lastName => text()();
 
-  factory Person.fromJson(Map<String, dynamic> data) => new Person(
-        key: PersonKey(data[COL_ID]),
-        firstName: data[COL_FIRST_NAME],
-        lastName: data[COL_LAST_NAME],
-        scannerLevel: ScannerLevel(data[COL_SCANNER_LEVEL]),
-        documentIdKey: DocumentKey(data[COL_DOCUMENT_ID_KEY]),
-        bankAccountKey: BankAccountKey(data[COL_BANK_ACCOUNT_KEY]),
-        hasMedScanner: data[COL_HAS_MED_SCANNER] != 0,
-        isWanted: data[COL_WANTED] != 0,
-      );
+  IntColumn get scannerLevel => integer().map(ScannerLevelConverter()).nullable()();
 
-  @override
-  DbEntryKey getKey() {
-    return key;
-  }
+  IntColumn get documentIdKey => integer().map(DocumentKeyConverter())();
 
-  @override
-  Map<String, dynamic> toJson() => {
-        COL_ID: key.intKey,
-        COL_FIRST_NAME: firstName,
-        COL_LAST_NAME: lastName,
-        COL_SCANNER_LEVEL: scannerLevel?.level ?? 0,
-        COL_DOCUMENT_ID_KEY: documentIdKey.intKey,
-        COL_BANK_ACCOUNT_KEY: bankAccountKey.intKey,
-        COL_HAS_MED_SCANNER: hasMedScanner ? 1 : 0,
-        COL_WANTED: isWanted ? 1 : 0,
-      };
+  IntColumn get bankAccountKey => integer().map(BankAccountKeyConverter())();
+
+  BoolColumn get hasMedScanner => boolean().withDefault(const Constant(false))();
+
+  BoolColumn get isWanted => boolean().withDefault(const Constant(false))();
 }
 
-class PersonTable extends DbTable<Person, PersonKey> {
+class PersonKeyConverter extends IntKeyConverter<PersonKey> {
   @override
-  DbTableKey<Person> getDbTableKey() {
-    return PersonKey.dbTableKey;
-  }
-
-  @override
-  String getIdColumnName() {
-    return Person.COL_ID;
-  }
-
-  @override
-  Map<String, String> getDataColumnDefinitions() {
-    return {
-      Person.COL_FIRST_NAME: "TEXT",
-      Person.COL_LAST_NAME: "TEXT",
-      Person.COL_SCANNER_LEVEL: "INTEGER",
-      Person.COL_DOCUMENT_ID_KEY: "INTEGER",
-      Person.COL_BANK_ACCOUNT_KEY: "STRING",
-      Person.COL_HAS_MED_SCANNER: "INTEGER",
-      Person.COL_WANTED: "INTEGER",
-    };
-  }
-
-  @override
-  Person fromJson(Map<String, dynamic> entryJson) => Person.fromJson(entryJson);
+  PersonKey createKey(int fromDb) => PersonKey(fromDb);
 }

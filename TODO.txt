@@ -4,6 +4,7 @@ Banking upload to Server
 
 read remote data version
 synchronize only when needed
+mark local updates, to send only required data
 
 Change Password (ServerScreen)
 

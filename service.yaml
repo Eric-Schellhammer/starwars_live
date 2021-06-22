@@ -1,0 +1,13 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: startwars_live_server
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+        - image: docker.io/YOUR_DOCKER_NAME/starwars_live_server
+          env:
+            - name: TARGET
+              value: "starwars_live_server v1"

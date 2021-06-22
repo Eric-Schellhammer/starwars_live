@@ -1,4 +1,4 @@
-import 'package:starwars_live/model/banking.dart';
+import 'moor_database.dart';
 
 class TempStorageService {
   CreditTransfer? lastSendTransfer;

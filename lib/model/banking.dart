@@ -1,106 +1,43 @@
-import 'package:starwars_live/data_access/local_database.dart';
 import 'package:intl/intl.dart';
+import 'package:json_annotation/json_annotation.dart' as j;
+import 'package:moor/moor.dart';
+import 'package:starwars_live/data_access/base_database.dart';
 
 const String TRANSFER_JSON_CODE = "code";
 const String TRANSFER_JSON_RECEIVER = "receiver";
 const String TRANSFER_JSON_SENDER = "sender";
 const String TRANSFER_JSON_AMOUNT = "amount";
 
-class BankAccountKey {
-  final int intKey;
-
-  BankAccountKey(this.intKey);
-
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is BankAccountKey && runtimeType == other.runtimeType && intKey == other.intKey;
-
-  @override
-  int get hashCode => intKey.hashCode;
+@j.JsonSerializable()
+class BankAccountKey extends IntKey {
+  BankAccountKey(int intKey) : super(intKey);
 }
 
-class BankBalance {
-  final int amount;
-
-  BankBalance(this.amount);
+@j.JsonSerializable()
+class BankBalance extends IntKey {
+  BankBalance(int amount) :super(amount);
 
   @override
   String toString() {
-    return NumberFormat("#,###", "de_DE").format(amount) + " Credits";
+    return NumberFormat("#,###", "de_DE").format(intKey) + " Credits";
   }
 }
 
 /// This is a transfer of credits between to persons
 
-class CreditTransferKey extends DbEntryKey {
-  static final DbTableKey<CreditTransfer> dbTableKey = DbTableKey<CreditTransfer>("CreditTransfer");
-
+@j.JsonSerializable()
+class CreditTransferKey extends IntKey {
   CreditTransferKey(int intKey) : super(intKey);
-
-  DbTableKey getDbTableKey() {
-    return dbTableKey;
-  }
 }
 
-class CreditTransfer extends DbEntry {
-  static const String COL_TRANSFER_CODE = "code";
-  static const String COL_SENDER_ID = "sender";
-  static const String COL_RECEIVER_ID = "receiver";
-  static const String COL_AMOUNT = "amount";
-
-  String code;
-  BankAccountKey sender;
-  BankAccountKey receiver;
-  int amount;
-
-  CreditTransfer({
-    required this.code,
-    required this.sender,
-    required this.receiver,
-    required this.amount,
-  });
-
-  factory CreditTransfer.fromJson(Map<String, dynamic> data) => new CreditTransfer(
-        code: data[COL_TRANSFER_CODE],
-        sender: BankAccountKey(data[COL_SENDER_ID]),
-        receiver: BankAccountKey(data[COL_RECEIVER_ID]),
-        amount: data[COL_AMOUNT] ?? 0,
-      );
-
-  @override
-  DbEntryKey getKey() {
-    return CreditTransferKey(-1);
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        COL_TRANSFER_CODE: code,
-        COL_SENDER_ID: sender.intKey,
-        COL_RECEIVER_ID: receiver.intKey,
-        COL_AMOUNT: amount,
-      };
+class CreditTransfers extends Table {
+  TextColumn get code => text()();
+  IntColumn get sender => integer().map(BankAccountKeyConverter())();
+  IntColumn get receiver => integer().map(BankAccountKeyConverter())();
+  IntColumn get amount => integer()();
 }
 
-class CreditTransferTable extends DbTable<CreditTransfer, CreditTransferKey> {
+class BankAccountKeyConverter extends IntKeyConverter<BankAccountKey> {
   @override
-  DbTableKey<CreditTransfer> getDbTableKey() {
-    return CreditTransferKey.dbTableKey;
-  }
-
-  @override
-  String? getIdColumnName() {
-    return null;
-  }
-
-  @override
-  Map<String, String> getDataColumnDefinitions() {
-    return {
-      CreditTransfer.COL_TRANSFER_CODE: "TEXT",
-      CreditTransfer.COL_SENDER_ID: "INTEGER",
-      CreditTransfer.COL_RECEIVER_ID: "INTEGER",
-      CreditTransfer.COL_AMOUNT: "INTEGER",
-    };
-  }
-
-  @override
-  CreditTransfer fromJson(Map<String, dynamic> entryJson) => CreditTransfer.fromJson(entryJson);
+  BankAccountKey createKey(int fromDb) => BankAccountKey(fromDb);
 }

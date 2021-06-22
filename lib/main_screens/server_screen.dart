@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starwars_live/data_access/data_service.dart';
-import 'package:starwars_live/data_access/local_database.dart';
+import 'package:starwars_live/data_access/moor_database.dart';
 import 'package:starwars_live/data_access/online_database.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/model/document.dart';
-import 'package:starwars_live/model/person.dart';
 import 'package:starwars_live/model/validation.dart';
-import 'package:starwars_live/scanner/scanner_service.dart';
+import 'package:starwars_live/ui_services/user_service.dart';
 
 class ServerScreen extends StatefulWidget {
   static const routeName = "/server_screen";
@@ -31,13 +30,11 @@ class ServerScreenState extends State<ServerScreen> {
   void _initFuture() {
     futureIdDocumentLevel = SharedPreferences.getInstance().then((preferences) async {
       //final ex = await GetIt.instance.get<DataService>().getDb().getExport();
-      var dataService = GetIt.instance.get<DataService>();
-      return dataService.getLoggedInPerson().then((person) {
+      return GetIt.instance.get<UserService>().getLoggedInPerson().then((person) {
         this.person = person;
-        final StarWarsDb db = dataService.getDb();
-        return db.getWhere(DocumentKey.dbTableKey, (conditions) => conditions.whereEquals(Document.COL_OWNER, person.key.intKey)).then((documents) {
-          this.documents = documents.where((document) => document.type != DocumentType.PERSONAL_ID).toList(growable: false);
-          return documents.where((document) => document.type == DocumentType.PERSONAL_ID).first.level;
+        return GetIt.instance.get<DataService>().getDocumentsOfPerson(person.id).then((documents) {
+          this.documents = documents.where((document) => document.documentType != DocumentType.PERSONAL_ID).toList(growable: false);
+          return documents.where((document) => document.documentType == DocumentType.PERSONAL_ID).first.level;
         });
       });
     });
@@ -63,9 +60,8 @@ class ServerScreenState extends State<ServerScreen> {
             child: FittedBox(child: Text("SYNC")),
             onPressed: () async {
               await GetIt.instance.get<SyncService>().fetchDatabase();
-              await GetIt.instance.get<DataService>().getLoggedInPerson().then(
-                    (person) => GetIt.instance.get<ScannerService>().setScanner(person.scannerLevel, person.hasMedScanner),
-                  );
+              var userService = GetIt.instance.get<UserService>();
+              await userService.getLoggedInPerson().then((person) => userService.setUser(person.id, person.scannerLevel, person.hasMedScanner));
               _initFuture();
               setState(() {}); // reload page
             },
@@ -74,7 +70,7 @@ class ServerScreenState extends State<ServerScreen> {
   }
 
   Widget _getForPerson(Person person, DocumentLevel idDocumentLevel) {
-    int scannerLevel = person.scannerLevel?.level ?? 0;
+    int scannerLevel = person.scannerLevel?.intKey ?? 0;
     final List<TableRow> children = [
       TableRow(children: [Text("Vorname"), Text(person.firstName)]),
       TableRow(children: [Text("Nachname"), Text(person.lastName)]),
@@ -83,18 +79,21 @@ class ServerScreenState extends State<ServerScreen> {
     ].toList();
     documents!.forEach((document) {
       children.add(
-        TableRow(children: [FittedBox(child: Text(document.type.name)), _getValidity(document.level)]),
+        TableRow(children: [
+          FittedBox(child: Text(document.documentType.name)),
+          _getValidity(document.level),
+        ]),
       );
     });
     return Center(
       child: Table(
-        children: children, // TODO change password button
+        children: children, // TODO add change password button
       ),
     );
   }
 
   Widget _getValidity(DocumentLevel level) {
-    return FittedBox(child: Text(level.isValid() ? "gültig" : "Fälschung Stufe " + level.level.toString()));
+    return FittedBox(child: Text(level.isValid() ? "gültig" : "Fälschung Stufe " + level.intKey.toString()));
   }
 
   Widget _getMissing() {

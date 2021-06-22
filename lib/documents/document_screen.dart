@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:starwars_live/data_access/moor_database.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
-import 'package:starwars_live/model/document.dart';
 
 class DocumentScreen extends StatefulWidget {
   static const String routeName = "/document_screen";
@@ -15,7 +15,7 @@ class DocumentScreen extends StatefulWidget {
 }
 
 class DocumentScreenState extends State<DocumentScreen> {
-  get document => widget.document;
+  Document get document => widget.document;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class DocumentScreenState extends State<DocumentScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  title: Center(child: Text(document.type.name)),
+                  title: Center(child: Text(document.documentType.name)),
                   subtitle: document.information != null
                       ? Center(
                           child: Text(

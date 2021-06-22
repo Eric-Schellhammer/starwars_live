@@ -4,16 +4,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/scanner/scanner_result_screen.dart';
+import 'package:starwars_live/ui_services/scanner_service.dart';
 
-class ScanScreen extends ScannerScreen {
-  static const routeName = "/scan_screen";
+class IdScanScreen extends ScannerScreen {
+  static const routeName = "/id_scan_screen";
 
-  ScanScreen({Key? key})
+  IdScanScreen({Key? key})
       : super(
-          handleScannedCode: (code) => GetIt.instance.get<DataService>().resolveScannedDocumentCode(code),
+          handleScannedCode: (code) => GetIt.instance.get<ScannerService>().resolveScannedDocumentCode(code),
           handleSuccessfulScan: (context, result) => Navigator.of(context).pushReplacementNamed(ScannerResultScreen.routeName, arguments: result),
           onCancel: (context) => Navigator.of(context).pushReplacementNamed(ScannerResultScreen.routeName),
           scanPrompt: "Führe Scan durch",
@@ -33,7 +33,7 @@ class ScannerScreen extends StatefulWidget {
     required this.handleSuccessfulScan,
     required this.onCancel,
     this.scanPrompt = "Führe Scan durch",
-    this.testResult = null,
+    this.testResult,
   }) : super(key: key);
 
   @override
@@ -60,18 +60,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
   @override
   Widget build(BuildContext context) {
     return StarWarsMasterDetailScreen(
-      masterChild: NotificationListener<SizeChangedLayoutNotification>(
-        onNotification: (notification) {
-          Future.microtask(() => controller?.updateDimensions(qrKey));
-          return false;
-        },
-        child: SizeChangedLayoutNotifier(
-          key: const Key('qr-size-notifier'),
-          child: QRView(
-            key: qrKey,
-            onQRViewCreated: _onQRViewCreated,
-          ),
-        ),
+      masterChild: QRView(
+        key: qrKey,
+        onQRViewCreated: _onQRViewCreated,
       ),
       detailChildren: [
         Column(

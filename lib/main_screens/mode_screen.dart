@@ -1,12 +1,11 @@
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:package_info/package_info.dart';
 import 'package:starwars_live/data_access/online_database.dart';
-import 'package:starwars_live/initialize/login_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
+import 'package:starwars_live/main_screens/login_screen.dart';
 import 'package:starwars_live/model/document.dart';
 
 enum Modes { LIVE, COPY }
@@ -127,7 +126,7 @@ class _ModeScreenState extends State<ModeScreen> {
           : () async {
               setState(() => waiting = true);
               final syncService = GetIt.instance.get<SyncService>();
-              syncService.setUrl(serverIpAddressController.text, "DB1");
+              syncService.setUrl(serverIpAddressController.text, "DB2");
               final String error = await syncService.loadIfAvailable().then((success) => "").onError((error, stackTrace) => error.toString());
               if (error.isEmpty) {
                 setState(() => waiting = false);

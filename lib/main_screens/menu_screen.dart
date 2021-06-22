@@ -7,8 +7,8 @@ import 'package:starwars_live/documents/id_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
 import 'package:starwars_live/medscan/medscan_screen.dart';
 import 'package:starwars_live/scanner/scanner_screen.dart';
-import 'package:starwars_live/scanner/scanner_service.dart';
-import 'package:starwars_live/server/server_screen.dart';
+import 'package:starwars_live/ui_services/user_service.dart';
+import 'package:starwars_live/main_screens/server_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   static const routeName = "/menu_screen";
@@ -25,7 +25,7 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   Widget build(BuildContext context) {
     userName = ModalRoute.of(context)?.settings.arguments as String? ?? "";
-    final scannerService = GetIt.instance.get<ScannerService>();
+    final scannerService = GetIt.instance.get<UserService>();
     final bool docScanner = scannerService.isScannerPresent();
     final bool medScanner = scannerService.hasMedScanner();
     return StarWarsMasterDetailScreen(
@@ -43,7 +43,7 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
           StarWarsMenuButton(
             child: FittedBox(child: Text("Scanner")),
-            onPressed: docScanner ? () => Navigator.of(context).pushNamed(ScanScreen.routeName) : null,
+            onPressed: docScanner ? () => Navigator.of(context).pushNamed(IdScanScreen.routeName) : null,
           ),
           StarWarsMenuButton(
             child: FittedBox(child: Text("Lizenzen")),

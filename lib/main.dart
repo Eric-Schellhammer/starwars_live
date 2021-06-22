@@ -5,13 +5,13 @@ import 'package:starwars_live/banking/banking_screen.dart';
 import 'package:starwars_live/documents/documents_list_screen.dart';
 import 'package:starwars_live/documents/id_screen.dart';
 import 'package:starwars_live/initialize/application_config.dart';
-import 'package:starwars_live/initialize/login_screen.dart';
-import 'package:starwars_live/initialize/menu_screen.dart';
-import 'package:starwars_live/initialize/mode_screen.dart';
+import 'package:starwars_live/main_screens/login_screen.dart';
+import 'package:starwars_live/main_screens/menu_screen.dart';
+import 'package:starwars_live/main_screens/mode_screen.dart';
+import 'package:starwars_live/main_screens/server_screen.dart';
 import 'package:starwars_live/medscan/medscan_screen.dart';
-import 'package:starwars_live/scanner/scanner_screen.dart';
 import 'package:starwars_live/scanner/scanner_result_screen.dart';
-import 'package:starwars_live/server/server_screen.dart';
+import 'package:starwars_live/scanner/scanner_screen.dart';
 
 void main() {
   final Application application = Application(child: StarWarsLive());
@@ -36,7 +36,7 @@ class StarWarsLive extends StatelessWidget {
         IdScreen.routeName: (ctx) => IdScreen(),
         DocumentsListScreen.routeName: (ctx) => DocumentsListScreen(),
         BankingScreen.routeName: (ctx) => BankingScreen(),
-        ScanScreen.routeName: (ctx) => ScanScreen(),
+        IdScanScreen.routeName: (ctx) => IdScanScreen(),
         ScannerResultScreen.routeName: (ctx) => ScannerResultScreen(),
         MedScanScreen.routeName: (ctx) => MedScanScreen(),
         ServerScreen.routeName: (ctx) => ServerScreen(),

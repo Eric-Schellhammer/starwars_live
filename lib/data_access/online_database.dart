@@ -20,15 +20,15 @@ class SyncService {
   }
 
   Future<bool> _requiresUpdate() {
-    // TODO query endpoint
+    // TODO query endpoint for update
     return Future.value(true);
   }
 
   Future<String> _getUpdate() {
-    return http.read("http://" + host! + "/SWL-" + dbInstance! + ".txt");
+    return host == null || dbInstance == null ? Future.value("") : http.read(Uri.http(host!, "SWL-" + dbInstance! + ".txt"));
   }
 
   Future<void> _executeUpdate(String jsonString) {
-    return GetIt.instance.get<DataService>().getDb().setImport(jsonString);
+    return GetIt.instance.get<DataService>().setImport(jsonString);
   }
 }

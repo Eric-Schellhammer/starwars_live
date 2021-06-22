@@ -1,226 +1,100 @@
 import 'dart:convert';
 
-import 'package:flutter/widgets.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moor/moor.dart';
+import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/model/account.dart';
 import 'package:starwars_live/model/banking.dart';
 import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/model/person.dart';
+import 'package:starwars_live/ui_services/user_service.dart';
 
-class StarWarsDb {
-  static const int _version = 17;
-  static final List<DbTable> _tables = [AccountTable(), PersonTable(), DocumentTable(), CreditTransferTable()];
+import 'moor_database.dart';
 
-  static Map<DbTableKey, DbTable>? _tablesByKey;
-  final Future<Database> _database = _createDatabase();
+class DataServiceImpl extends DataService {
+  late final StarWarsDb db;
 
-  static Future<Database> _createDatabase() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    _ensureTablesMapIsFilled();
-    return getDatabasesPath().then((databasesPath) => openDatabase(join(databasesPath, 'starwars_live.db'), version: _version, onUpgrade: _createTables));
+  DataServiceImpl() {
+    db = StarWarsDb();
   }
 
-  static void _ensureTablesMapIsFilled() {
-    if (_tablesByKey == null) {
-      // TODO make synchronized
-      _tablesByKey = Map();
-      _tables.forEach((table) => _tablesByKey!.putIfAbsent(table.getDbTableKey(), () => table));
-    }
+  StarWarsDb getDb() {
+    return db;
   }
 
-  static void _createTables(Database database, int oldVersion, int version) async {
-    _tables.forEach((table) async {
-      await database.execute("DROP TABLE IF EXISTS " + table.getDbTableKey().getTableName()); // TODO remove when total re-create is no longer desired
-      await database.execute(table.createTableCommand());
-      _tablesByKey!.putIfAbsent(table.getDbTableKey(), () => table);
+  @override
+  Future<Account?> validateAccount(String userName, String password) async {
+    final matches = await (db.select(db.accounts)..where((account) => account.loginName.equals(userName) & account.password.equals(password))).get();
+    return matches.isEmpty ? null : matches.first;
+  }
+
+  @override
+  Future<Account?> getAccountByKey(AccountKey accountKey) {
+    return (db.select(db.accounts)..where((account) => account.key.equals(accountKey.intKey))).getSingleOrNull();
+  }
+
+  @override
+  Future<Person?> getPersonByKey(PersonKey personKey) {
+    return (db.select(db.persons)..where((tbl) => tbl.id.equals(personKey.intKey))).getSingleOrNull();
+  }
+
+  @override
+  Future<int> getCredits(PersonKey personKey) {
+    return GetIt.instance.get<UserService>().getLoggedInPerson().then((person) => person.bankAccountKey).then((loggedInBankAccount) async {
+      int amount = 0;
+      await (db.select(db.creditTransfers)..where((transfer) => transfer.receiver.equals(loggedInBankAccount.intKey)))
+          .get()
+          .then((receivingTransfers) => receivingTransfers.forEach((transfer) => amount += transfer.amount));
+      await (db.select(db.creditTransfers)..where((transfer) => transfer.sender.equals(loggedInBankAccount.intKey)))
+          .get()
+          .then((sendingTransfers) => sendingTransfers.forEach((transfer) => amount -= transfer.amount));
+      return amount;
     });
   }
 
-  Future<int> insert(DbEntry entry) async => _database.then((db) => _tablesByKey![entry.getKey().getDbTableKey()]!.insert(db, entry));
-
-  Future<int> update(DbEntry entry) async => _database.then((db) => _tablesByKey![entry.getKey().getDbTableKey()]!.update(db, entry));
-
-  Future<int> delete(DbEntryKey id) async => _database.then((db) => _tablesByKey![id.getDbTableKey()]!.delete(db, id));
-
-  Future<List<DB_ENTRY>> getAll<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> table) async =>
-      _database.then((db) => _tablesByKey![table]!.getAll(db)).then((list) => list as List<DB_ENTRY>);
-
-  Future<DB_ENTRY?> getByIdOrNull<DB_ENTRY extends DbEntry>(DbEntryKey key) async =>
-      _database.then((db) => _tablesByKey![key.getDbTableKey()]!.getById(db, key)).then((entry) => entry == null ? null : entry as DB_ENTRY);
-
-  Future<DB_ENTRY> getById<DB_ENTRY extends DbEntry>(DbEntryKey key) async => getByIdOrNull(key).then((entry) {
-        if (entry != null)
-          return entry as DB_ENTRY;
-        else
-          throw Exception("No entry for ID");
-      });
-
-  Future<List<DB_ENTRY>> getWhere<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> table, void Function(ConditionBuilder) conditions) {
-    final ConditionBuilder builder = ConditionBuilder();
-    conditions.call(builder);
-    return _database.then((db) => _tablesByKey![table]!.getWhere(db, builder)).then((list) => list as List<DB_ENTRY>);
+  @override
+  Future<Document?> getDocumentForCode(String code) {
+    return (db.select(db.documents)..where((document) => document.code.equals(code))).getSingleOrNull();
   }
-
-  Future<DB_ENTRY?> getSingleWhereOrNull<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> table, void Function(ConditionBuilder) conditions) =>
-      getWhere(table, conditions).then((matches) => matches.isEmpty ? null : matches.single);
-
-  Future<DB_ENTRY?> getSingleWhere<DB_ENTRY extends DbEntry>(DbTableKey<DB_ENTRY> table, void Function(ConditionBuilder) conditions) =>
-      getWhere(table, conditions).then((matches) => matches.single);
-
-  Future<void> closeDatabase() async {
-    final Database db = await _database;
-    await db.close();
-  }
-
-  Future<String> getExport() {
-    return _database.then((db) => _DbExporter(db).getExport());
-  }
-
-  Future<void> setImport(String jsonString) {
-    return _database.then((db) => _DbImporter(db).setImport(jsonString));
-  }
-}
-
-class DbTableKey<DB_ENTRY extends DbEntry> {
-  final String _key;
-
-  DbTableKey(this._key);
-
-  String getTableName() => _key;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is DbTableKey && runtimeType == other.runtimeType && _key == other._key;
+  Future<List<Document>> getDocumentsOfPerson(PersonKey personKey) {
+    return (db.select(db.documents)
+          ..where((document) => document.ownerKey.equals(personKey.intKey))
+          ..where((document) => document.documentType.equals(DocumentType.PERSONAL_ID.intKey).not()))
+        .get();
+  }
 
   @override
-  int get hashCode => _key.hashCode;
-}
-
-abstract class DbEntryKey {
-  final int intKey;
-
-  DbEntryKey(this.intKey);
-
-  DbTableKey getDbTableKey();
+  Future<Document?> getDocumentByKey(DocumentKey documentKey) {
+    return (db.select(db.documents)..where((document) => document.id.equals(documentKey.intKey))).getSingleOrNull();
+  }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is DbEntryKey && runtimeType == other.runtimeType && intKey == other.intKey;
-
-  @override
-  int get hashCode => intKey.hashCode;
-}
-
-abstract class DbEntry {
-  DbEntryKey getKey();
-
-  Map<String, dynamic> toJson();
-}
-
-abstract class DbTable<DB_ENTRY extends DbEntry, DB_ENTRY_KEY extends DbEntryKey> {
-  DbTableKey getDbTableKey();
-
-  String? getIdColumnName();
-
-  Map<String, String> getDataColumnDefinitions();
-
-  DB_ENTRY fromJson(Map<String, dynamic> entryJson);
-
-  String createTableCommand() {
-    String command = "CREATE TABLE " + getDbTableKey().getTableName() + " (";
-    _ifIdColumnName((idColumnName) => command += idColumnName + " INTEGER PRIMARY KEY, ");
-    bool first = true;
-    getDataColumnDefinitions().entries.forEach((columnDefinition) {
-      if (first)
-        first = false;
-      else
-        command += ", ";
-      command += columnDefinition.key + " " + columnDefinition.value;
-    });
-    command += ")";
-    return command;
-  }
-
-  Future<int> insert(Database db, DB_ENTRY entry) async => await db.insert(getDbTableKey().getTableName(), entry.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
-
-  Future<int> update(Database db, DB_ENTRY entry) async => await db.update(
-        getDbTableKey().getTableName(),
-        entry.toJson(),
-        where: _getExistingIdColumnName() + " = ?",
-        whereArgs: [entry.getKey().intKey],
-      );
-
-  Future<int> delete(Database db, DB_ENTRY_KEY key) async => await db.delete(
-        getDbTableKey().getTableName(),
-        where: _getExistingIdColumnName() + ' = ?',
-        whereArgs: [key.intKey],
-      );
-
-  Future<List<DB_ENTRY>> getAll(Database db) async {
-    final result = await db.query(getDbTableKey().getTableName(), columns: _getAllColumnNames());
-    return result.toList(growable: false).map((entryJson) => fromJson(entryJson)).toList(growable: false);
-  }
-
-  Future<DB_ENTRY?> getById(Database db, DB_ENTRY_KEY key) async {
-    final List<Map<String, dynamic>> results = await db.query(
-      getDbTableKey().getTableName(),
-      columns: _getAllColumnNames(),
-      where: _getExistingIdColumnName() + ' = ?',
-      whereArgs: [key.intKey],
-    );
-    if (results.length > 0) return fromJson(results.first);
-    return null;
-  }
-
-  Future<List<DB_ENTRY>> getWhere(Database db, ConditionBuilder conditions) async {
-    final result = await db.query(
-      getDbTableKey().getTableName(),
-      columns: _getAllColumnNames(),
-      where: conditions.where,
-      whereArgs: conditions.whereArgs,
-    );
-    return result.toList(growable: false).map((entryJson) => fromJson(entryJson)).toList(growable: false);
-  }
-
-  List<String> _getAllColumnNames() {
-    final List<String> allNames = List.empty(growable: true);
-    _ifIdColumnName((idColumnName) => allNames.add(idColumnName));
-    allNames.addAll(getDataColumnDefinitions().keys);
-    return allNames;
-  }
-
-  void _ifIdColumnName(void Function(String) handler) {
-    final String? name = getIdColumnName();
-    if (name != null) handler.call(name);
-  }
-
-  String _getExistingIdColumnName() {
-    final String? name = getIdColumnName();
-    if (name == null) throw Exception("ID Column is required for this operation, but none was defined");
-    return name;
-  }
-}
-
-class ConditionBuilder {
-  String where = "";
-  final List<dynamic> whereArgs = List.empty(growable: true);
-
-  ConditionBuilder whereEquals(String columnName, dynamic value) {
-    if (where.isNotEmpty) {
-      where += " AND ";
+  Future<Person?> getPersonForBankAccount(String accountKeyAsString) {
+    try {
+      final key = BankAccountKey(int.parse(accountKeyAsString));
+      return (db.select(db.persons)..where((person) => person.bankAccountKey.equals(key.intKey))).getSingleOrNull();
+    } catch (e) {
+      return Future.value(null);
     }
-    where += columnName + " =?";
-    whereArgs.add(value);
-    return this;
   }
 
-  ConditionBuilder whereNotEquals(String columnName, dynamic value) {
-    if (where.isNotEmpty) {
-      where += " AND NOT ";
-    }
-    where += columnName + " =?";
-    whereArgs.add(value);
-    return this;
+  @override
+  Future<CreditTransfer?> getTransferForCode(String code) {
+    return (db.select(db.creditTransfers)..where((transfer) => transfer.code.equals(code))).getSingleOrNull();
   }
+
+  @override
+  Future<void> addTransfer(CreditTransfer creditTransfer) {
+    return db.into(db.creditTransfers).insert(creditTransfer);
+  }
+
+  @override
+  Future<String> getExport() => _DbExporter(getDb()).getExport();
+
+  @override
+  Future<void> setImport(String jsonString) => _DbImporter(getDb()).setImport(jsonString);
 }
 
 class _DbExporter {
@@ -228,27 +102,27 @@ class _DbExporter {
   static const String HEAD_CONTENT_VERSION = "content version";
   static const String TABLES = "tables";
 
-  final Database db;
+  final StarWarsDb db;
 
   _DbExporter(this.db);
 
   Future<String> getExport() async {
     final Map<String, dynamic> root = Map();
-    root[HEAD_FORMAT_VERSION] = StarWarsDb._version.toString();
-    root[HEAD_CONTENT_VERSION] = "0";
+    // root[HEAD_FORMAT_VERSION] = StarWarsDb.version.toString();
+    // root[HEAD_CONTENT_VERSION] = "0";
     final Map<String, dynamic> tables = Map();
     root[TABLES] = tables;
-    await Future.wait(StarWarsDb._tables.map((table) => _getTableContent(table).then((content) => tables[table.getDbTableKey().getTableName()] = content)));
+    await Future.wait(db.allTables.map((table) => _getTableContent(table).then((content) => tables[table.actualTableName] = content)));
     return jsonEncode(root);
   }
 
-  Future<List<Map<String, dynamic>>> _getTableContent(DbTable table) {
-    return db.query(table.getDbTableKey().getTableName(), columns: table._getAllColumnNames());
+  Future<List<Map<String, dynamic>>> _getTableContent(TableInfo table) {
+    return db.select(table).get().then((entities) => entities.map((e) => (e as Insertable).toColumns(true).map((key, value) => MapEntry(key, (value as Variable).value))).toList());
   }
 }
 
 class _DbImporter {
-  final Database db;
+  final StarWarsDb db;
 
   _DbImporter(this.db);
 
@@ -258,11 +132,17 @@ class _DbImporter {
     //  throw Exception("Cannot update DB version yet (current: " + StarWarsDb._version.toString() + " read: " + root[_DbExporter.HEAD_FORMAT_VERSION]);
     // note: CONTENT_VERSION not yet checked
 
-    final Map<String, dynamic> tables = root[_DbExporter.TABLES];
     final List<Future> futures = List.empty(growable: true);
-    tables.forEach((tableName, entriesList) {
-      futures.add(db.execute("DELETE FROM " + tableName).then((__) => Future.wait((entriesList as List).map((entry) => db.insert(tableName, entry)))));
-    });
+    final Map<String, dynamic> importedTables = root[_DbExporter.TABLES];
+    db.allTables.forEach((tableInfo) => futures.add(db.delete(tableInfo).go().then((__) {
+          final List<Future> insertFutures = List.empty(growable: true);
+          importedTables[tableInfo.actualTableName].forEach((entity) => insertFutures.add(insert(tableInfo, entity)));
+          return Future.wait(insertFutures);
+        })));
     return Future.wait(futures).then((value) => null);
+  }
+
+  Future<int> insert(TableInfo table, Map<String, dynamic> entity) async {
+    return db.into(table).insert(table.map(entity));
   }
 }

@@ -17,7 +17,7 @@ class MedScanScreenState extends State<MedScanScreen> {
   Widget build(BuildContext context) {
     return DoubleTextSizeTheme(
       child: StarWarsMasterDetailScreen(
-        masterChild: scanResult == null ? prepareScan() : (scanning ? performScan() : finishScan()),
+        masterChild: scanResult == null ? _prepareScan() : (scanning ? _performScan() : _finishScan()),
         detailChildren: [
           StarWarsTextButton(
             text: (scanResult == null || scanning) ? "Abbrechen" : "Schließen",
@@ -28,34 +28,32 @@ class MedScanScreenState extends State<MedScanScreen> {
     );
   }
 
-  Widget prepareScan() {
+  Widget _prepareScan() {
     return GestureDetector(
-      child: human(),
-      onHorizontalDragEnd: (details) => setResult(context, MedScanResult.WARN),
-      onVerticalDragUpdate: (details) => details.delta.direction > 0 ? setResult(context, MedScanResult.CRITICAL) : setResult(context, MedScanResult.OK),
+      child: _human(),
+      onHorizontalDragEnd: (details) => _setResult(context, MedScanResult.WARN),
+      onVerticalDragUpdate: (details) => details.delta.direction > 0 ? _setResult(context, MedScanResult.CRITICAL) : _setResult(context, MedScanResult.OK),
     );
   }
 
-  Widget performScan() {
+  Widget _performScan() {
     return Stack(
       children: [
         Center(child: ScannerWidget(() => setState(() => scanning = false))),
-        Center(child: human()),
+        Center(child: _human()),
       ],
     );
   }
 
-  Widget finishScan() {
-    return Center(child: human(color: getColor()));
+  Widget _finishScan() {
+    return Center(child: _human(color: _getColor()));
   }
 
-  void setResult(BuildContext context, MedScanResult scanResult) {
-    setState(() {
-      this.scanResult = scanResult;
-    });
+  void _setResult(BuildContext context, MedScanResult scanResult) {
+    setState(() => this.scanResult = scanResult);
   }
 
-  Widget human({Color color = MAIN_COLOR}) {
+  Widget _human({Color color = MAIN_COLOR}) {
     return Center(
       child: Image.asset(
         "assets/HumanOutline.png",
@@ -65,7 +63,7 @@ class MedScanScreenState extends State<MedScanScreen> {
     );
   }
 
-  Color getColor() {
+  Color _getColor() {
     if (scanResult == null) return MAIN_COLOR;
     switch (scanResult) {
       case MedScanResult.OK:
@@ -87,10 +85,10 @@ class ScannerWidget extends StatefulWidget {
   ScannerWidget(this.finishHook);
 
   @override
-  State<StatefulWidget> createState() => ScannerWidgetState();
+  State<StatefulWidget> createState() => _ScannerWidgetState();
 }
 
-class ScannerWidgetState extends State<ScannerWidget> with SingleTickerProviderStateMixin {
+class _ScannerWidgetState extends State<ScannerWidget> with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     duration: const Duration(seconds: 2),
     vsync: this,

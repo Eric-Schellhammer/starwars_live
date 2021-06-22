@@ -1,29 +1,34 @@
+import 'package:json_annotation/json_annotation.dart' as j;
+import 'package:starwars_live/data_access/base_database.dart';
 
-class DocumentLevel {
-  final int level;
-
+@j.JsonSerializable()
+class DocumentLevel extends IntKey {
   factory DocumentLevel.createValid() => DocumentLevel._(0);
 
   factory DocumentLevel.createForgery(int level) => DocumentLevel._(level);
 
-  DocumentLevel._(this.level);
+  DocumentLevel._(int level) : super(level);
 
   bool isValid() {
-    return level == 0;
+    return intKey == 0;
   }
 
   /// only returns a valid value if isValid() is false
   int levelOfForgery() {
-    return level;
+    return intKey;
   }
 }
 
-class ScannerLevel {
-  final int level;
-
-  ScannerLevel(this.level);
+@j.JsonSerializable()
+class ScannerLevel extends IntKey {
+  ScannerLevel(int level) : super(level);
 
   bool isValid(DocumentLevel documentLevel) {
-    return documentLevel.isValid() || this.level < documentLevel.levelOfForgery();
+    return documentLevel.isValid() || this.intKey < documentLevel.levelOfForgery();
   }
+}
+
+class ScannerLevelConverter extends IntKeyConverter<ScannerLevel> {
+  @override
+  ScannerLevel createKey(int fromDb) => ScannerLevel(fromDb);
 }
