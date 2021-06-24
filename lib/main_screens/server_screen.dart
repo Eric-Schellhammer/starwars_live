@@ -29,7 +29,6 @@ class ServerScreenState extends State<ServerScreen> {
 
   void _initFuture() {
     futureIdDocumentLevel = SharedPreferences.getInstance().then((preferences) async {
-      //final ex = await GetIt.instance.get<DataService>().getDb().getExport();
       return GetIt.instance.get<UserService>().getLoggedInPerson().then((person) {
         this.person = person;
         return GetIt.instance.get<DataService>().getDocumentsOfPerson(person.id).then((documents) {

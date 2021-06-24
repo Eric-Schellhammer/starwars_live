@@ -5,6 +5,7 @@ import 'package:starwars_live/data_access/data_service.dart';
 import 'package:starwars_live/data_access/moor_database.dart';
 import 'package:starwars_live/documents/document_screen.dart';
 import 'package:starwars_live/initialize/starwars_widgets.dart';
+import 'package:starwars_live/model/document.dart';
 import 'package:starwars_live/ui_services/user_service.dart';
 
 class DocumentsListScreen extends StatefulWidget {
@@ -15,7 +16,10 @@ class DocumentsListScreen extends StatefulWidget {
 }
 
 class DocumentsListScreenState extends State<DocumentsListScreen> {
-  final Future<List<Document>> documentsFuture = GetIt.instance.get<DataService>().getDocumentsOfPerson(GetIt.instance.get<UserService>().getLoggedInPersonKey());
+  final Future<List<Document>> documentsFuture = GetIt.instance
+      .get<DataService>()
+      .getDocumentsOfPerson(GetIt.instance.get<UserService>().getLoggedInPersonKey())
+      .then((documents) => documents.where((document) => document.documentType != DocumentType.PERSONAL_ID).toList());
 
   @override
   Widget build(BuildContext context) {

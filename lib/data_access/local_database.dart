@@ -60,8 +60,7 @@ class DataServiceImpl extends DataService {
   @override
   Future<List<Document>> getDocumentsOfPerson(PersonKey personKey) {
     return (db.select(db.documents)
-          ..where((document) => document.ownerKey.equals(personKey.intKey))
-          ..where((document) => document.documentType.equals(DocumentType.PERSONAL_ID.intKey).not()))
+          ..where((document) => document.ownerKey.equals(personKey.intKey)))
         .get();
   }
 
